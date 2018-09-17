@@ -25,7 +25,8 @@ class Network():
         self.connections = connections
         self.neurons = neurons
         self.output_neurons = neurons[-n_outputs:]
-        self.weight_mutate_weight = 0.8
+        self.mutate_weight_uniform = 0.72
+        self.mutate_weight_random = 0.08
         self.add_connection_rate = 0.05
         self.add_node_rate = 0.03
         self.fitness = self.fitness()
@@ -72,10 +73,14 @@ class Network():
             ))
         
         def mutate_connection_edit(self):
-            if random.random < self.mutate_connection_edit:
-                mutated = random.choice(self.connections)
-                mutated.weight = random.absolute(-1, 1)
-        
+            if random.random() <= self.mutate_weight_uniform:
+                random_add = random.absolute(-1, 1)
+                connection = random.choice(self.connections)
+                connection.weight += random_add
+            elif random.random() <= self.mutate_weight_random:
+                connection = random.choice(self.connections)
+                connection.weight = random.absolute(-1, 1)
+                
         def mutate_node_add(self):
             min_layer = 0
             max_layer = 0
