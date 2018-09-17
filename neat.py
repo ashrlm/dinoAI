@@ -225,7 +225,7 @@ def crossover(network_1, network_2):
     new_connections = []
     new_neurons = []
     
-    for i in range(len(larger_network.connections)
+    for i in range(len(larger_network.connections)):
         try:
             if network_1.connections[i].gil == network_2.connections[i].gil:
                 new_connections.append(
