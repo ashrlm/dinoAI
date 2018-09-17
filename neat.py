@@ -112,7 +112,7 @@ class Network():
                 (split_connection.neurons[0],
                 new_neuron,
                 layer
-            ))
+            )))
             
             self.connnections.append(Connection(
                 (new_neuron,
