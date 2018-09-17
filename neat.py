@@ -13,6 +13,12 @@ import random
 import game
 import math
 
+c1 = 1.0
+c2 = 1.0
+c3 = 0.4
+
+threshold = 3.0
+
 class Network():
 
     def __init__(self, connections, neurons, n_outputs):
@@ -61,7 +67,8 @@ class Network():
 
             self.connections.append(Connection(
                 (neuron_0,
-                neuron_1)
+                neuron_1),
+                random.absolute(-1,1)
             ))
         
         def mutate_connection_edit(self):
@@ -70,8 +77,49 @@ class Network():
                 mutated.weight = random.absolute(-1, 1)
         
         def mutate_node_add(self):
-            pass
-        
+            min_layer = 0
+            max_layer = 0
+            
+            for neuron in self.neurons:
+                if neuron.layer.index < min_layer:
+                    min_layer = neuron.layer.index
+                elif neuron.layer.index < max_layer:
+                    max_layer = neuron.layer.index
+            
+            layer_index = random.randint(min_layer+1, max_layer-1)
+            layer = Layer.layers[layer_index]
+            
+            connections = []
+            
+            for connection in self.connections:
+                if connection.neurons[0] == layer_index-1 and connection.neurons[1] == layer_index+1:
+                    connection.append(connection)
+                    
+            split_connection = random.choice(connections)
+            
+            
+            
+            new_neuron = Neuron(
+                split_connection.neurons[1].inputs,
+                layer
+            )
+            
+            self.neurons.append(new_neuron)
+            
+            self.connections[self.connections.index(split_connection.neurons[0])].activated = False
+            
+            self.connections.append(Connection(
+                (split_connection.neurons[0],
+                new_neuron,
+                layer
+            ))
+            
+            self.connnections.append(Connection(
+                (new_neuron,
+                split_connection.neurons[1]),
+                split_connection.weight                
+            ))
+                    
         def adjusted_fitness(self):
             return self.fitness / len(self.species.population)
         
@@ -102,10 +150,10 @@ class Connection():
 
     gin = {}
 
-    def __init__(self, neurons):
+    def __init__(self, neurons, weight):
         self.neurons = neurons
         self.activated = True
-        self.weight = random.absolute(-1, 1)
+        self.weight = weight
 
         if self.neurons in Connection.gin:
             self.gin = Connection.gin[self.neurons]
@@ -123,6 +171,15 @@ class Species():
     def add(self, new_network):
         self.population.append(new_network)
         
+class Layer():
+    
+    layers = []
+    
+    def __init__(self, index, neurons):
+        self.index = index
+        self.neurons = neurons
+        Layer.layers.append(self)
+    
 def compatibility(c1, c2, c3, network1, network2, threshold):
     neurons_larger = max(len(network_1.neurons), len(network_2.neurons))
 
