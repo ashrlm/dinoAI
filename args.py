@@ -1,5 +1,3 @@
-import sys
-
 def parse():
     args = {}
     
@@ -8,5 +6,3 @@ def parse():
             args[sys.argv[i].replace('-', '')] = sys.argv[i+1]
     
     return args
-    
-print(parse())
