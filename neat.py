@@ -9,9 +9,14 @@ __outputs__
         Duck: 1
 """
 
+#Prebuilt Libraries
 import random
-import game
 import math
+import sys
+
+#Helper Scripts
+import game
+import args
 
 c1 = 1.0
 c2 = 1.0
@@ -21,10 +26,10 @@ threshold = 3.0
 
 class Network():
 
-    def __init__(self, connections, neurons, n_outputs):
+    def __init__(self, connections, neurons, outputs):
         self.connections = connections
         self.neurons = neurons
-        self.output_neurons = neurons[-n_outputs:]
+        self.outputs = outputs
         self.mutate_weight_uniform = 0.72
         self.mutate_weight_random = 0.08
         self.add_connection_rate = 0.05
@@ -257,3 +262,36 @@ def crossover(network_1, network_2):
         new_neurons,
         network_1.n_outputs
     )
+    
+def create_population(size, outputs):
+    
+    population = []
+    
+    output_layer = Layer(
+        float('inf'),
+        []        
+    )
+    
+    for i in range(size):
+        outputs = []
+        
+        for i in range(outputs):
+            outputs.append(Neuron(
+                [],
+                output_layer
+            ))
+        
+        population.append(Network(
+            [],
+            [],
+            outputs
+        ))
+    
+    return population
+
+
+
+def main():
+    print(sys.argv)
+
+main()
