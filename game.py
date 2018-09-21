@@ -10,29 +10,48 @@ class Entity():
 
 class Player(Entity):
     def __init__(self):
-        super().__init__('assets.')
+        super().__init__('assets/dino.png')
+        self.alive = True
         self.xpos = 50
         self.ypos = 600 - self.image.get_size()[1]
         self.yvel = 0
         self.jumping = False
+    
+    def jump(self):
+        pass
+    
+    def duck(self):
+        pass
+    
+    def play(network):
+        results = {}
+        score = 0
+        while self.alive:
+            network_activation = network.activate
+            if network_activation.md == "jump":
+                self.jump()
+            elif network_activation.md == "duck":
+                self.duck()
+            else:
+                print("This should never happen. Fix NOW!!")
+                quit()
 
 class Cactus(Entity):
 
     cacti = []
 
     def __init__(self):
-        super().__init__('assets/cactus' + str(random.randint(1,5)) + '.png')
+        super().__init__('assets/cactus.png')
         self.xpos = Cactus.cacti[-1] + random.randint(150, 750)
         self.ypos = 600 - self.image.get_size()[1]
 
 class Bird(Entity):
 
     birds = []
-    img_paths = ['assets/bird1.png', 'assets/bird2.png', 'assets/bird3.png']
 
     def __init__(self):
         self.type = random.randint(0,2) #Low, mid, high
-        super().__init__(Bird.img_path[self.type])
+        super().__init__('assets/bird.png')
         self.ypos = (
             550 - self.image.get_size()[1] - (self.type * 50)
         )
