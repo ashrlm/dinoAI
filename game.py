@@ -17,21 +17,16 @@ class Player(Entity):
         self.yvel = 0
         self.jumping = False
     
-    def jump(self):
-        pass
-    
-    def duck(self):
-        pass
-    
     def play(network):
         results = {}
         score = 0
         while self.alive:
             network_activation = network.activate
             if network_activation.md == "jump":
-                self.jump()
+                self.jumping = True
+                self.yvel = 100
             elif network_activation.md == "duck":
-                self.duck()
+                super().__init__('assets/dino_duck.png')
             else:
                 print("This should never happen. Fix NOW!!")
                 quit()
