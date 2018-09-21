@@ -145,16 +145,18 @@ class Neuron():
 
     gin = {}
 
-    def __init__(self, inputs, layer, output=None):
+    def __init__(self, inputs, layer, output=None, md="Hidden"):
         self.inputs = inputs #Dict: {Neuron: Weight}
         self.output = output
         self.layer = layer
+        self.md = md
 
     def activate(self):
         weighted_input = 0
         for input in self.inputs:
             weighted_input += input.out * self.inputs[input]
         self.output = max(0, weighted_input)
+
 
 class Connection():
 
@@ -274,12 +276,19 @@ def create_population(size, outputs):
     
     for i in range(size):
         outputs = []
+        md = [
+            "jump",
+            "duck"
+        ]
         
         for i in range(outputs):
             outputs.append(Neuron(
-                [],
-                output_layer
+                {},
+                output_layer,
+                md[0]
             ))
+            
+            md = md[1:]
         
         population.append(Network(
             [],
@@ -288,10 +297,3 @@ def create_population(size, outputs):
         ))
     
     return population
-
-
-
-def main():
-    print(sys.argv)
-
-main()
