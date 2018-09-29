@@ -431,6 +431,7 @@ def main():
                 if connection.neurons[0].layer.index == float('inf'):
                     print("removed")
                     network.connections.remove(connection)
+                    connection.neurons[1].inputs.remove(connection)
             pop_scored[network] = network.fitness
 
         ranked = rank(pop_scored)
