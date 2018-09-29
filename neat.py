@@ -214,12 +214,12 @@ class Neuron():
             try:
                 weighted_input += (connection.weight * connection.neurons[0].output)
             except TypeError:
-                print(self.layer.index)
-                print(connection.neurons[0].layer.index)
+                self.inputs.remove(connection)
+                self.activate()
                 quit()
 
         try:
-            self.output = round((2 / (1 + (math.e **-(weighted_input)))) - 1, 4)
+            self.output = round((2 / (1 + (math.e **(-5*(weighted_input))))) - 1, 4)
         except OverflowError:
             if weighted_input > 0:
                 self.output = 1
@@ -427,11 +427,6 @@ def main():
 
         pop_scored = {}
         for network in population:
-            for connection in network.connections:
-                if connection.neurons[0].layer.index == float('inf'):
-                    print("removed")
-                    network.connections.remove(connection)
-                    connection.neurons[1].inputs.remove(connection)
             pop_scored[network] = network.fitness
 
         ranked = rank(pop_scored)
