@@ -81,7 +81,7 @@ def play(networks):
         def jump(self):
             if not self.jumping:
                 self.jumping = True
-                self.yvel = 25
+                self.yvel = 32
                 self.hitbox.x = self.xpos
                 self.hitbox.y = self.ypos
 
