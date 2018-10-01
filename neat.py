@@ -302,13 +302,25 @@ def create_population(size):
 
     return population
 
+def rank(in_dict):
+    sorted_out = {}
+    in_keys = list(in_dict.keys())
+    in_vals = list(in_dict.values())
+    sorted_vals = sorted(in_vals)[::-1]
+    while len(in_dict) != len(sorted_out):
+        for val in sorted_vals:
+            for key in in_keys:
+                if in_dict[key] == val:
+                    sorted_out[key] = val
+    return dict(sorted_out)
+
 def main():
 
     population = create_population(50)
 
     while True:
-        fitnesses = {}
         fitnesses = game.play(population)
+        ranked = rank(population)
 
 if __name__ == "__main__":
     main()
