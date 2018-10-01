@@ -71,7 +71,7 @@ def play(networks):
                 quit()
 
         for network in networks:
-            output = network.activate
+            output = network.activate()
             if output.md=="jump":
                 network.jump()
             elif output.md=="duck":
