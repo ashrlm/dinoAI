@@ -14,6 +14,9 @@ class Entity():
         if enemy:
             Entity.enemies.append(self)
 
+    def update(self):
+        self.xpos -= 0.1
+
 
 class Player(Entity):
     def __init__(self):
@@ -23,33 +26,6 @@ class Player(Entity):
         self.ypos = 600 - self.image.get_size()[1]
         self.yvel = 0
         self.jumping = False
-
-    def play(network):
-        results = {}
-        score = 0
-        while self.alive:
-            network_activation = network.activate
-
-            if network_activation.md == "jump":
-                self.jumping = True
-                self.yvel = 100
-            elif network_activation.md == "duck":
-                super().__init__('assets/dino_duck.png')
-
-            elif network_activation.md = "still":
-                pass
-
-            else:
-                print("This should never happen. Fix NOW!!")
-                quit()
-
-            for obstacle in Entity.enemies:
-                if self.hitbox.colliderect(obstacle.hitbox):
-                    self.alive = False
-
-            score += 1
-
-        return score
 
 class Cactus(Entity):
 
@@ -81,11 +57,12 @@ player = Player()
 # TODO: FIX PLAY FUNCTION
 
 def play(networks):
-    pass
 
-'''def play(network):
+    players = {}
+    for network in networks:
+        players[network] = Player()
 
-    clock = pygame.time.Clock()
+    clock = pygame.time.clock()
     score = 0
     gameover = False
 
@@ -95,19 +72,26 @@ def play(networks):
             if event.type==pygame.QUIT:
                 quit()
 
-        output = network.activate()
+        for network in networks:
+            output = network.activate
+            if output.md=="jump":
+                network.jump()
+            elif output.md=="duck":
+                network.duck()
 
-        if output.md == "jump":
-            player.jump()
-        elif output.md == "duck":
-            player.duck()
+        for network in networks:
 
-        screen.blit(player.image, (player.x, player.y))
+            curr_player = players[network]
+            screen.blit(curr_player, (curr_player.xpos, curr_player.ypos))
 
-        for enemy in Cactus.cacti + Bird.birds:
-            screen.blit(enemy, (enemy.xpos, enemy.ypos))
-            if player.hitbox.colliderect(enemy.hitbox):
-                gameover=True
+            for enemy in Entity.enemies:
+                enemy.update()
+                screen.blit(enemy, (enemy.xpos, enemy.ypos))
+                if curr_player.hitbox.colliderect(enemy.hitbox):
+                    gameover=True
+                    break
+
+            curr_player.update()
 
         if gameover:
             break
@@ -115,4 +99,4 @@ def play(networks):
             score += 1
             clock.tick(30)
 
-    return score'''
+    return score
