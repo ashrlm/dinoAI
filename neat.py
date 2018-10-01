@@ -321,6 +321,16 @@ def main():
     while True:
         fitnesses = game.play(population)
         ranked = rank(population)
+        population = []
+        for net in ranked[:5]:
+            population.append(net)
+            ranked.remove(net)
+
+        for i in range(0, len(ranked)-1, 2):
+            population.append(crossover(ranked[i], ranked[i+1]))
+
+        population.append(ranked[-1])
+
 
 if __name__ == "__main__":
     main()
