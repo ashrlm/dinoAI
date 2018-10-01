@@ -78,7 +78,12 @@ class Bird(Entity):
 
 player = Player()
 
-def play(network):
+# TODO: FIX PLAY FUNCTION
+
+def play(networks):
+    pass
+
+'''def play(network):
 
     clock = pygame.time.Clock()
     score = 0
@@ -110,4 +115,4 @@ def play(network):
             score += 1
             clock.tick(30)
 
-    return score
+    return score'''
