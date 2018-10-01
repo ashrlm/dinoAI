@@ -26,6 +26,11 @@ class Player(Entity):
         self.ypos = 600 - self.image.get_size()[1]
         self.yvel = 0
         self.jumping = False
+        self.score = 0
+
+    def update(self):
+        self.xpos -= 0.1
+        self.score += 1
 
 class Cactus(Entity):
 
@@ -61,7 +66,6 @@ def play(networks):
         players[network] = Player()
 
     clock = pygame.time.clock()
-    score = 0
     gameover = False
 
     while True:
@@ -93,8 +97,11 @@ def play(networks):
 
         if gameover:
             break
-        else:
-            score += 1
-            clock.tick(30)
 
-    return score
+        clock.tick(30)
+
+    scores = {}
+    for network in players:
+        scores[network] = players[network].score
+
+    return scores
