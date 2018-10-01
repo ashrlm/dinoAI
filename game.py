@@ -54,8 +54,6 @@ class Bird(Entity):
 
 player = Player()
 
-# TODO: FIX PLAY FUNCTION
-
 def play(networks):
 
     players = {}
