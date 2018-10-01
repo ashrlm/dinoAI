@@ -52,8 +52,7 @@ class Network():
         return output
 
     def fitness(self):
-        results = game.play()
-        self.fitness = results['fitness']
+        return game.play(self)
 
     def mutate_connection_add(self):
         if random.random() < self.add_connection_rate:
@@ -76,7 +75,7 @@ class Network():
                 neuron_1),
                 random.absolute(-1,1)
             ))
-        
+
         def mutate_connection_edit(self):
             if random.random() <= self.mutate_weight_uniform:
                 random_add = random.absolute(-1, 1)
@@ -85,61 +84,61 @@ class Network():
             elif random.random() <= self.mutate_weight_random:
                 connection = random.choice(self.connections)
                 connection.weight = random.absolute(-1, 1)
-                
+
         def mutate_node_add(self):
             min_layer = 0
             max_layer = 0
-            
+
             for neuron in self.neurons:
                 if neuron.layer.index < min_layer:
                     min_layer = neuron.layer.index
                 elif neuron.layer.index < max_layer:
                     max_layer = neuron.layer.index
-            
+
             layer_index = random.randint(min_layer+1, max_layer-1)
             layer = Layer.layers[layer_index]
-            
+
             connections = []
-            
+
             for connection in self.connections:
                 if connection.neurons[0] == layer_index-1 and connection.neurons[1] == layer_index+1:
                     connection.append(connection)
-                    
+
             split_connection = random.choice(connections)
-            
-            
-            
+
+
+
             new_neuron = Neuron(
                 split_connection.neurons[1].inputs,
                 layer
             )
-            
+
             self.neurons.append(new_neuron)
-            
+
             self.connections[self.connections.index(split_connection.neurons[0])].activated = False
-            
+
             self.connections.append(Connection(
                 (split_connection.neurons[0],
                 new_neuron,
                 layer
             )))
-            
+
             self.connnections.append(Connection(
                 (new_neuron,
                 split_connection.neurons[1]),
-                split_connection.weight                
+                split_connection.weight
             ))
-                    
+
         def adjusted_fitness(self):
             return self.fitness / len(self.species.population)
-        
+
         def speciate(self):
             for species in Species.species:
                 if compatibility(self, species.representative):
                     species.add(self)
                     return None
             Species.species.append(Species(self))
-            
+
 
 class Neuron():
 
@@ -179,19 +178,19 @@ class Species():
     def __init__(self, population):
         self.population = population
         self.representative = random.choice(self.population)
-        
+
     def add(self, new_network):
         self.population.append(new_network)
-        
+
 class Layer():
-    
+
     layers = []
-    
+
     def __init__(self, index, neurons):
         self.index = index
         self.neurons = neurons
         Layer.layers.append(self)
-    
+
 def compatibility(c1, c2, c3, network1, network2, threshold):
     neurons_larger = max(len(network_1.neurons), len(network_2.neurons))
 
@@ -221,79 +220,93 @@ def compatibility(c1, c2, c3, network1, network2, threshold):
     if compatibility <= threshold:
         return True
     return False
-    
+
 def crossover(network_1, network_2):
     fitter_net = None
     if network_1.fitness > network_2.fitness:
         fitter_net = network_1
     elif network_2.fitness > network_1.fitness:
         fitter_net = network_2
-    
+
     larger_network = network_1
-    
+
     if len(network_1.connections) < len(network_2.connections):
         larger_network = network_2
-    
+
     new_connections = []
     new_neurons = []
-    
+
     for i in range(len(larger_network.connections)):
         try:
             if network_1.connections[i].gil == network_2.connections[i].gil:
                 new_connections.append(
                     random.choice(
-                        network_1.connections[i], 
+                        network_1.connections[i],
                         network_2.connections[i]
                     )
                 )
             else:
                 new_connections.append(fitter_net.connections[i])
-                        
+
         except IndexError:
             if larger_network == fitter_net:
                 new_connections.append(larger_network.connections[i])
-    
+
     for connection in new_connections:
         if connection.neurons[0] not in new_neurons:
             new_neurons.append(connection.nuerons[0])
         if connection.neurons[1] not in new_neurons:
             new_neurons.append(connection.neurons[1])
-            
+
     return Network(
         new_connections,
         new_neurons,
         network_1.n_outputs
     )
-    
-def create_population(size, outputs):
-    
+
+def rank(dict):
+    pass
+
+def create_population(size):
+
     population = []
-    
+
     output_layer = Layer(
         float('inf'),
-        []        
+        []
     )
-    
+
     for i in range(size):
         outputs = []
         md = [
             "jump",
             "duck"
         ]
-        
+
         for i in range(outputs):
             outputs.append(Neuron(
                 {},
                 output_layer,
                 md[0]
             ))
-            
+
             md = md[1:]
-        
+
         population.append(Network(
             [],
             [],
             outputs
         ))
-    
+
     return population
+
+def main():
+
+    population = create_population(50)
+
+    while True:
+        fitnesses = {}
+        fitnesses = game.play(population)
+
+if __name__ == "__main__":
+    main()
