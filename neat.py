@@ -1,13 +1,11 @@
-"""
-__main__
-    This is the main script for the dino game, with the game logic/graphics
-    being handled by game.py
+# __main__
+    # This is the main script for the dino game, with the game logic/graphics
+    # being handled by game.py
 
-__outputs__
-    There are 2 Outputs:
-        Jump: 0
-        Duck: 1
-"""
+#
+# __outputs__
+    # There are 2 Outputs:
+        # Jump: 0
 
 #Prebuilt Libraries
 import random
@@ -49,7 +47,11 @@ class Network():
                 confidence = neuron.output
                 output = neuron
 
-        return output
+        if confidence => .5:
+            return output
+
+        else:
+            return None
 
     def fitness(self):
         return game.play(self)
