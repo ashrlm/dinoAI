@@ -7,6 +7,9 @@
     # There are 2 Outputs:
         # Jump: 0
 
+# TODO: Bug fixes
+#TODO: Speciation
+
 #Prebuilt Libraries
 import random
 import math
@@ -34,6 +37,15 @@ class Network():
         self.add_node_rate = 0.03
         self.fitness = self.fitness()
         self.adjusted_fitness = -1
+        self.species = self.speciate()
+
+    def speciate(self):
+        for species in Species.species:
+            if compatibility(c1,c2,c3, self, species.representative, threshold):
+                species.population.append(self)
+                break
+        else:
+            self.species = Species([self])
 
     def activate(self):
         for neuron in self.neurons:
@@ -47,14 +59,14 @@ class Network():
                 confidence = neuron.output
                 output = neuron
 
-        if confidence => .5:
+        if confidence >= .5:
             return output
 
         else:
             return None
 
     def fitness(self):
-        return game.play(self)
+        return game.play(self.species.networks)
 
     def mutate_connection_add(self):
         if random.random() < self.add_connection_rate:
@@ -180,6 +192,7 @@ class Species():
     def __init__(self, population):
         self.population = population
         self.representative = random.choice(self.population)
+        Species.species.append(self)
 
     def add(self, new_network):
         self.population.append(new_network)
