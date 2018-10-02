@@ -3,9 +3,13 @@ from pygame.locals import *
 
 screen = pygame.display.set_mode((1200, 800))
 
+# TODO: Get images for enemies
+# TODO: Create enemies
+# TODO: Scale all
+
 class Entity():
 
-    enimies = []
+    enemies = []
 
     def __init__(self, img_path, enemy=True):
         self.image = pygame.image.load(img_path)
@@ -29,7 +33,7 @@ class Player(Entity):
         self.score = 0
 
     def update(self):
-        self.xpos -= 0.1
+        self.xpos += 1
         self.score += 1
 
 class Cactus(Entity):
@@ -65,7 +69,7 @@ def play(networks):
     for network in networks:
         players[network] = Player()
 
-    clock = pygame.time.clock()
+    clock = pygame.time.Clock()
     gameover = False
 
     while True:
@@ -74,17 +78,22 @@ def play(networks):
             if event.type==pygame.QUIT:
                 quit()
 
+        screen.fill((255,255,255))
+
         for network in networks:
             output = network.activate()
-            if output.md=="jump":
-                network.jump()
-            elif output.md=="duck":
-                network.duck()
+            try:
+                if output.md=="jump":
+                    network.jump()
+                elif output.md=="duck":
+                    network.duck()
+            except:
+                pass
 
         for network in networks:
 
             curr_player = players[network]
-            screen.blit(curr_player, (curr_player.xpos, curr_player.ypos))
+            screen.blit(curr_player.image, (curr_player.xpos, curr_player.ypos))
 
             for enemy in Entity.enemies:
                 enemy.update()
@@ -98,6 +107,7 @@ def play(networks):
         if gameover:
             break
 
+        pygame.display.flip()
         clock.tick(30)
 
     scores = {}

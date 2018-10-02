@@ -35,17 +35,18 @@ class Network():
         self.mutate_weight_random = 0.08
         self.add_connection_rate = 0.05
         self.add_node_rate = 0.03
+        self.species = self.speciate()
+        print(self.species)
         self.fitness = self.fitness()
         self.adjusted_fitness = -1
-        self.species = self.speciate()
 
     def speciate(self):
         for species in Species.species:
             if compatibility(c1,c2,c3, self, species.representative, threshold):
                 species.population.append(self)
-                break
+                return species
         else:
-            self.species = Species([self])
+            return Species([self])
 
     def activate(self):
         for neuron in self.neurons:
@@ -54,7 +55,7 @@ class Network():
         confidence = 0
         output = None
 
-        for neuron in self.output_neurons:
+        for neuron in self.outputs:
             if neuron.output > confidence:
                 confidence = neuron.output
                 output = neuron
@@ -66,7 +67,7 @@ class Network():
             return None
 
     def fitness(self):
-        return game.play(self.species.networks)
+        return game.play(self.species.population)
 
     def mutate_connection_add(self):
         if random.random() < self.add_connection_rate:
