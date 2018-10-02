@@ -266,9 +266,6 @@ def crossover(network_1, network_2):
         network_1.n_outputs
     )
 
-def rank(dict):
-    pass
-
 def create_population(size):
 
     population = []
@@ -276,33 +273,33 @@ def create_population(size):
     output_layer = Layer(
         float('inf'),
         []
-    )
+    ) #Generate output layer - +Inf so all behind it
 
     for i in range(size):
         outputs = []
         md = [
             "jump",
             "duck"
-        ]
+        ] #
 
-        for i in range(outputs):
+        for i in range(len(outputs)):
             outputs.append(Neuron(
                 {},
                 output_layer,
                 md[0]
-            ))
+            )) #Create outputs
 
-            md = md[1:]
+            md.remove(md[0])
 
         population.append(Network(
             [],
             [],
             outputs
-        ))
+        )) #Create empty network with only outputs
 
     return population
 
-def rank(in_dict):
+def rank(in_dict): #Ranks a dict by key - [Highest, ..., Lowest]
     sorted_out = {}
     in_keys = list(in_dict.keys())
     in_vals = list(in_dict.values())
@@ -322,15 +319,24 @@ def main():
         fitnesses = game.play(population)
         ranked = rank(population)
         population = []
-        for net in ranked[:5]:
+
+        for net in ranked[:5]: #Keep the top 5 from curr population
             population.append(net)
-            ranked.remove(net)
+            ranked.remove(net) #Remove so not used in XOver
 
         for i in range(0, len(ranked)-1, 2):
             population.append(crossover(ranked[i], ranked[i+1]))
 
-        population.append(ranked[-1])
+        for i in range(49 - len(population)): #Mutate enough to fill population to 50
+            if random.random() <= .5: #Select random number, if <= .5 chance to mutate connection
+                if random.random() <= .5: #Do same thing, if <= .5 chance to add connection
+                    ranked[random.randint(0, len(ranked)-1)].mutate_connection_add()
+                else: #Else chance to mutate connection
+                    ranked[random.randint(0, len(ranked)-1)].mutate_connection_edit()
+            else: #Otherwise chance to add neuron
+                ranked[random.randint(0, len(ranked)-1)].mutate_node_add()
 
+        population.append(ranked[-1]) #Keep lowest-performing network to prevent local maximum
 
 if __name__ == "__main__":
     main()
