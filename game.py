@@ -1,11 +1,13 @@
 import pygame
 from pygame.locals import *
 
-screen = pygame.display.set_mode((1200, 800))
+screen = pygame.display.set_mode((1800, 900))
+gravity = 9.81
 
 # TODO: Get images for enemies
 # TODO: Create enemies
 # TODO: Scale all
+# TODO: Fix the movement
 
 class Entity():
 
@@ -14,7 +16,7 @@ class Entity():
     def __init__(self, img_path, enemy=True):
         self.image = pygame.image.load(img_path)
         self.hitbox = self.image.get_rect()
-        self.alive
+        self.alive = True
 
         if enemy:
             Entity.enemies.append(self)
@@ -25,7 +27,7 @@ class Entity():
             if random.random() > .999: #Chance to generate an emeny of same type as self
                 self.__class__() #No need to assign, handled by __init__
 
-        else:
+        else: #If entity dead, remove them from list(s)
             Entity.enemies.remove(self)
             if type(self).__name__ == "Bird":
                 Bird.birds.remove(self)
@@ -38,11 +40,36 @@ class Player(Entity):
         self.ypos = 600 - self.image.get_size()[1]
         self.yvel = 0
         self.jumping = False
+        self.ducking = False
         self.score = 0
 
+    def jump(self):
+        self.jumping = True
+        self.yvel = 100 #Temp: CHNAGE LATER
+
+    def duck(self):
+        self.ducking = True
+
     def update(self):
-        self.xpos += 1
         self.score += 1
+
+        if self.ducking:
+            self.image = pygame.image.load('assets/dinoduck.png')
+            self.hitbox = self.image.get_rect()
+
+        if self.jumping:
+            self.ducking = False
+            self.image = pygame.image.load('assets/dino.png')
+            self.hitbox = self.image.get_rect() #Stop ducking when network wants to jump
+
+            if self.ypos + self.yvel < 600 - self.image.get_size()[1]:
+                self.ypos = 600 - self.image.get_size()[1]
+
+            else:
+                self.ypos += self.yvel
+                self.yvel =- gravity
+
+
 
 class Cactus(Entity):
 
@@ -65,7 +92,7 @@ class Bird(Entity):
         if Bird.birds != []:
             self.xpos = Bird.birds[-1].xpos + random.randint(150, 750)
         else:
-            self.xpos = 1200
+            self.xpos = 1800
 
 def play(networks):
 
@@ -85,19 +112,19 @@ def play(networks):
         screen.fill((255,255,255))
 
         for network in networks:
-            if network.alive:
+
+            curr_player = players[network]
+
+            if curr_player.alive:
                 output = network.activate()
                 try:
                     if output.md=="jump":
-                        network.jump()
-                    elif output.md=="duck":
-                        network.duck()
+                        curr_player.jump()
+                    else:
+                        players[network].duck()
                 except:
                     pass
 
-        for network in networks:
-
-            curr_player = players[network]
             screen.blit(curr_player.image, (curr_player.xpos, curr_player.ypos))
 
             for enemy in Entity.enemies:
