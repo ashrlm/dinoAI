@@ -1,13 +1,14 @@
 import pygame
 from pygame.locals import *
 
-screen = pygame.display.set_mode((1800, 900))
+size = (1350, 675)
+screen = pygame.display.set_mode(size)
 gravity = 9.81
 
+# TODO: Cactus XPOS generation
 # TODO: Get images for enemies
 # TODO: Create enemies
 # TODO: Scale all
-# TODO: Fix the movement
 
 class Entity():
 
@@ -19,7 +20,15 @@ class Entity():
         self.alive = True
 
         if enemy:
-            Entity.enemies.append(self)
+            Entity.enemies.append(self) #Add self to list on enemies 
+            self.__class__.instances.append(self) #Add self to instances stored in instances (class variable)
+            
+            if self.__class__.instances != []: #Generate XPOS - YPOS HANDLED BY SELF CLASS
+                self.xpos = self.__class__.instances[-1].xpos + random.randint(100, 1000)
+            else:
+                self.xpos = size[0] 
+
+            
 
     def update(self):
         if self.alive:
@@ -37,7 +46,7 @@ class Player(Entity):
     def __init__(self):
         super().__init__('assets/dino.png', enemy=False)
         self.xpos = 50
-        self.ypos = 600 - self.image.get_size()[1]
+        self.ypos = size[1] - self.image.get_size()[1]
         self.yvel = 0
         self.jumping = False
         self.ducking = False
@@ -62,8 +71,8 @@ class Player(Entity):
             self.image = pygame.image.load('assets/dino.png')
             self.hitbox = self.image.get_rect() #Stop ducking when network wants to jump
 
-            if self.ypos + self.yvel < 600 - self.image.get_size()[1]:
-                self.ypos = 600 - self.image.get_size()[1]
+            if self.ypos + self.yvel < size[1] - self.image.get_size()[1]:
+                self.ypos = size[1] - self.image.get_size()[1]
 
             else:
                 self.ypos += self.yvel
@@ -73,26 +82,21 @@ class Player(Entity):
 
 class Cactus(Entity):
 
+    instances = []
+
     def __init__(self):
         super().__init__('assets/cactus.png')
-        self.xpos = Cactus.cacti[-1] + random.randint(150, 750)
-        self.ypos = 600 - self.image.get_size()[1]
+        self.ypos = size[1] - self.image.get_size()[1]
 
 class Bird(Entity):
 
-    birds = []
+    instances = []
 
     def __init__(self):
-        self.type = random.randint(0,2) #Low, mid, high
+        self.type = random.randint(0,2) #High: 0, Mid: 1, Low: 2
         super().__init__('assets/bird.png')
-        self.ypos = (
-            550 - self.image.get_size()[1] - (self.type * 50)
-        )
+        self.ypos = 100 + (50 * self.type)
 
-        if Bird.birds != []:
-            self.xpos = Bird.birds[-1].xpos + random.randint(150, 750)
-        else:
-            self.xpos = 1800
 
 def play(networks):
 
