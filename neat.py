@@ -5,8 +5,10 @@
 #
 # __outputs__
     # There are 2 Outputs:
-        # Jump
-        # Duck
+        # Jump: 0
+
+# TODO: Bug fixes
+#TODO: Speciation
 
 #Prebuilt Libraries
 import random
@@ -15,6 +17,7 @@ import sys
 
 #Helper Scripts
 import game
+import args
 
 c1 = 1.0
 c2 = 1.0
