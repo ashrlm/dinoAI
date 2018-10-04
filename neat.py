@@ -5,19 +5,16 @@
 #
 # __outputs__
     # There are 2 Outputs:
-        # Jump: 0
-
-# TODO: Bug fixes
-#TODO: Speciation
-
+        # jump
+        # duc
+        # NB: If neither condition has a confidence >= .5, then the player wil continue as usual
 #Prebuilt Libraries
 import random
 import math
 import sys
 
-#Helper Scripts
+#Helper Script
 import game
-import args
 
 c1 = 1.0
 c2 = 1.0
