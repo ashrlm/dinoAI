@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # __main__
     # This is the main script for the dino game, with the game logic/graphics
     # being handled by game.py

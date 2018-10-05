@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+
+import random
 import pygame
 from pygame.locals import *
 
@@ -5,9 +8,8 @@ size = (1350, 675)
 screen = pygame.display.set_mode(size)
 gravity = 9.81
 
-
-# TODO: Get images for enemies
-# TODO: Create enemies
+# TODO: Get images for enemies - ASAP!!
+# TODO: Create enemies - Maybe Done? Need assets
 # TODO: Scale all
 
 class Entity():
@@ -39,7 +41,8 @@ class Entity():
             if type(self).__name__ == "Bird":
                 Bird.birds.remove(self)
 
-        if random.randint() > .999999: #Very infrequently add enemies
+        if random.random() > .3: #Very infrequently add enemies
+            # NOTE: Edit the frequency later
             self.__class__()
 
 
@@ -112,7 +115,13 @@ class Bird(Entity):
         super().__init__('assets/bird.png')
         self.ypos = 100 + (50 * self.type)
 
+#Generate initial enemies to work off of - Otherwise never created
+Bird()
+Cactus()
+
 def play(networks):
+
+    print("Playing")
 
     scores = {}
     players = {}
