@@ -5,7 +5,7 @@ size = (1350, 675)
 screen = pygame.display.set_mode(size)
 gravity = 9.81
 
-# TODO: Cactus XPOS generation
+
 # TODO: Get images for enemies
 # TODO: Create enemies
 # TODO: Scale all
@@ -20,15 +20,15 @@ class Entity():
         self.alive = True
 
         if enemy:
-            Entity.enemies.append(self) #Add self to list on enemies 
+            Entity.enemies.append(self) #Add self to list of enemies
             self.__class__.instances.append(self) #Add self to instances stored in instances (class variable)
-            
+
             if self.__class__.instances != []: #Generate XPOS - YPOS HANDLED BY SELF CLASS
                 self.xpos = self.__class__.instances[-1].xpos + random.randint(100, 1000)
             else:
-                self.xpos = size[0] 
+                self.xpos = size[0]
 
-            
+
 
     def update(self):
         if self.alive:
@@ -86,6 +86,14 @@ class Cactus(Entity):
 
     def __init__(self):
         super().__init__('assets/cactus.png')
+
+        if random.random() >= .7:
+            size_x = self.image.get_size()[0]
+            size_y = self.image.get_size()[1]
+
+            new_x = random.randint(size_x-50, size_x+300) #size_x +500 to allow the equivilant of multiple cacti
+            new_y = random.randint(size_y-50, size_y+50)
+
         self.ypos = size[1] - self.image.get_size()[1]
 
 class Bird(Entity):
