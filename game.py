@@ -28,8 +28,6 @@ class Entity():
             else:
                 self.xpos = size[0]
 
-
-
     def update(self):
         if self.alive:
             self.xpos -= 1
@@ -41,8 +39,14 @@ class Entity():
             if type(self).__name__ == "Bird":
                 Bird.birds.remove(self)
 
+        if random.randint() > .999999: #Very infrequently add enemies
+            self.__class__()
+
 
 class Player(Entity):
+
+    instances = []
+
     def __init__(self):
         super().__init__('assets/dino.png', enemy=False)
         self.xpos = 50
@@ -87,7 +91,7 @@ class Cactus(Entity):
     def __init__(self):
         super().__init__('assets/cactus.png')
 
-        if random.random() >= .7:
+        if random.random() >= .7: #Sometimes scale (70%)
             size_x = self.image.get_size()[0]
             size_y = self.image.get_size()[1]
 
@@ -107,7 +111,6 @@ class Bird(Entity):
         self.type = random.randint(0,2) #High: 0, Mid: 1, Low: 2
         super().__init__('assets/bird.png')
         self.ypos = 100 + (50 * self.type)
-
 
 def play(networks):
 
