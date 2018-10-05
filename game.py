@@ -94,6 +94,9 @@ class Cactus(Entity):
             new_x = random.randint(size_x-50, size_x+300) #size_x +500 to allow the equivilant of multiple cacti
             new_y = random.randint(size_y-50, size_y+50)
 
+            self.image = pygame.transform.scale(self.image, (new_x, new_y))
+            self.hitbox = self.image.get_rect()
+
         self.ypos = size[1] - self.image.get_size()[1]
 
 class Bird(Entity):
