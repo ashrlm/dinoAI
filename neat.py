@@ -9,6 +9,9 @@
         # jump
         # duc
         # NB: If neither condition has a confidence >= .5, then the player wil continue as usual
+
+## TODO: Add bias neuron - ASAP
+
 #Prebuilt Libraries
 import random
 import math
@@ -27,14 +30,14 @@ class Network():
 
     def __init__(self, connections, neurons, outputs):
         self.connections = connections
-        self.neurons = neurons
+        self.neurons = neurons + outputs
         self.outputs = outputs
         self.mutate_weight_uniform = 0.72
         self.mutate_weight_random = 0.08
         self.add_connection_rate = 0.05
         self.add_node_rate = 0.03
         self.species = self.speciate()
-        self.fitness = self.fitness()
+        self.fitness = -1
         self.adjusted_fitness = -1
 
     def speciate(self):
@@ -47,7 +50,7 @@ class Network():
 
     def activate(self):
         for neuron in self.neurons:
-            neuron.activate
+            neuron.activate()
 
         confidence = 0
         output = None
@@ -63,7 +66,7 @@ class Network():
         else:
             return None
 
-    def fitness(self):
+    def calc_fitness(self):
         return game.play(self.species.population)
 
     def mutate_connection_add(self):
@@ -160,9 +163,14 @@ class Neuron():
         self.inputs = inputs #Dict: {Neuron: Weight}
         self.output = output
         self.layer = layer
-        self.md = md
+        layer.neurons.append(self) #Add self to list of neurons in layer
+        self.md = md #Determine if output neuron
 
     def activate(self):
+
+        if self.output:
+            return self.output
+
         weighted_input = 0
         for input in self.inputs:
             weighted_input += input.out * self.inputs[input]
@@ -205,24 +213,26 @@ class Layer():
         Layer.layers.append(self)
 
 def compatibility(c1, c2, c3, network1, network2, threshold):
-    neurons_larger = max(len(network_1.neurons), len(network_2.neurons))
+    neurons_larger = max(len(network1.neurons), len(network2.neurons))
 
-    excess = (max(len(network_1.connections), len(network_2.connections)) -
-              min(len(network_1.connections), len(network_2.connections)))
+    excess = (max(len(network1.connections), len(network2.connections)) -
+              min(len(network1.connections), len(network2.connections)))
 
     weight_diff_matching = []
     disjoint = 0
 
-    for i in range(min(len(network_1.connections), len(network_2.connections))):
-        if network_1.connections[i].gin == network_2.connections[i].gin:
+    for i in range(min(len(network1.connections), len(network2.connections))):
+        if network1.connections[i].gin == network2.connections[i].gin:
             weight_diff_matching.append(math.abs(
-                network_1.connections[i].gin - network_2.connections[i].gin
+                network1.connections[i].gin - network2.connections[i].gin
             ))
 
         else:
             disjoint += 1
-
-    avg_w_diff = sum(weight_diff_matching) / len(weight_diff_matching)
+    try:
+        avg_w_diff = sum(weight_diff_matching) / len(weight_diff_matching)
+    except ZeroDivisionError:
+        avg_w_diff = sum(weight_diff_matching)
 
     compatibility = (
         ((c1 * excess) / neurons_larger) +
@@ -277,7 +287,7 @@ def crossover(network_1, network_2):
         network_1.n_outputs
     )
 
-def create_population(size):
+def create_population(size, inputs, input_layer, n_outputs):
 
     population = []
 
@@ -293,20 +303,20 @@ def create_population(size):
             "duck"
         ] #
 
-        for i in range(len(outputs)):
+        for i in range(n_outputs):
             outputs.append(Neuron(
                 {},
                 output_layer,
-                md[0]
+                md=md[0]
             )) #Create outputs
 
             md.remove(md[0])
 
         population.append(Network(
             [],
-            [],
+            [], ## TODO: Add Inputs
             outputs
-        )) #Create empty network with only outputs
+        )) #Create empty network with only outputs and inputs
 
     return population
 
@@ -324,10 +334,35 @@ def rank(in_dict): #Ranks a dict by key - [Highest, ..., Lowest]
 
 def main():
 
-    population = create_population(50)
+    #Create input layer - Neurons added in Neuron.__init__
+    input_layer = Layer(
+        0,
+        []
+    )
+
+    #Bias Neuron Generation
+    bias = Neuron(
+        [],
+        input_layer,
+        output=1,
+        md="Bias"
+    )
+
+    #Generation of inputs
+    inputs = []
+    for i in range(7):
+        inputs.append(Neuron(
+            [],
+            input_layer,
+            md="input"
+        ))
+
+    population = create_population(50, inputs, input_layer, 2)
+
+    for network in population:
+        network.fitness = network.calc_fitness()
 
     while True:
-        fitnesses = game.play(population)
         ranked = rank(population)
         population = []
 
