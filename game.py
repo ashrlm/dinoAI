@@ -8,9 +8,9 @@ size = (1350, 675)
 screen = pygame.display.set_mode(size)
 gravity = 9.81
 
-# TODO: Get images for enemies - ASAP!!
-# TODO: Create enemies - Maybe Done? Need assets
-# TODO: Scale all
+# TODO: Update Input Neuron outputs as game progresses
+# TODO: Scaling
+# TODO: Create enemies - Scaling pre-req
 
 class Entity():
 
@@ -22,13 +22,24 @@ class Entity():
         self.alive = True
 
         if enemy:
-            Entity.enemies.append(self) #Add self to list of enemies
-            self.__class__.instances.append(self) #Add self to instances stored in instances (class variable)
 
             if self.__class__.instances != []: #Generate XPOS - YPOS HANDLED BY SELF CLASS
                 self.xpos = self.__class__.instances[-1].xpos + random.randint(100, 1000)
             else:
                 self.xpos = size[0]
+
+            if random.random() >= .7: #Sometimes scale (70%)
+                size_x = self.image.get_size()[0]
+                size_y = self.image.get_size()[1]
+
+                new_x = abs(random.randint(size_x-50, size_x+300)) #size_x +500 to allow the equivilant of multiple cacti
+                new_y = abs(random.randint(size_y-50, size_y+50))
+
+                self.image = pygame.transform.scale(self.image, (new_x, new_y))
+                self.hitbox = self.image.get_rect()
+
+            Entity.enemies.append(self) #Add self to list of enemies
+            self.__class__.instances.append(self) #Add self to instances stored in instances (class variable)
 
     def update(self):
         if self.alive:
@@ -41,7 +52,7 @@ class Entity():
             if type(self).__name__ == "Bird":
                 Bird.birds.remove(self)
 
-        if random.random() > .3: #Very infrequently add enemies
+        if random.random() > .999999: #Very infrequently add enemies
             # NOTE: Edit the frequency later
             self.__class__()
 
@@ -94,16 +105,6 @@ class Cactus(Entity):
     def __init__(self):
         super().__init__('assets/cactus.png')
 
-        if random.random() >= .7: #Sometimes scale (70%)
-            size_x = self.image.get_size()[0]
-            size_y = self.image.get_size()[1]
-
-            new_x = random.randint(size_x-50, size_x+300) #size_x +500 to allow the equivilant of multiple cacti
-            new_y = random.randint(size_y-50, size_y+50)
-
-            self.image = pygame.transform.scale(self.image, (new_x, new_y))
-            self.hitbox = self.image.get_rect()
-
         self.ypos = size[1] - self.image.get_size()[1]
 
 class Bird(Entity):
@@ -121,10 +122,9 @@ Cactus()
 
 def play(networks):
 
-    print("Playing")
-
     scores = {}
     players = {}
+
     for network in networks:
         players[network] = Player()
 
@@ -132,9 +132,9 @@ def play(networks):
 
     while True:
 
-        for event in pygame.event.get():
+        '''for event in pygame.event.get():
             if event.type==pygame.QUIT:
-                quit()
+                quit()'''
 
         screen.fill((255,255,255))
 
@@ -156,7 +156,7 @@ def play(networks):
 
             for enemy in Entity.enemies:
                 enemy.update()
-                screen.blit(enemy, (enemy.xpos, enemy.ypos))
+                screen.blit(enemy.image, (enemy.xpos, enemy.ypos))
                 if curr_player.hitbox.colliderect(enemy.hitbox):
                     curr_player.alive = False
                     break
