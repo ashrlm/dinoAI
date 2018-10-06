@@ -7,10 +7,12 @@ from pygame.locals import *
 size = (1350, 675)
 screen = pygame.display.set_mode(size)
 gravity = 9.81
+speed = 1
 
-# TODO: Update Input Neuron outputs as game progresses
-# TODO: Scaling
-# TODO: Create enemies - Scaling pre-req
+# TODO: Update Input Neuron outputs as game progresses - Allow decisions based
+# on current information
+
+# TODO: Scaling - Fix "Magic numbers"
 
 class Entity():
 
@@ -18,8 +20,9 @@ class Entity():
 
     def __init__(self, img_path, enemy=True):
         self.image = pygame.image.load(img_path)
-        self.hitbox = self.image.get_rect()
         self.alive = True
+        ## NOTE: Hitboxes are handled by self.__init__, as Xpos and Ypos are needed,
+        ##       and they are not generated until then due to changing necessities
 
         if enemy:
 
@@ -42,8 +45,9 @@ class Entity():
             self.__class__.instances.append(self) #Add self to instances stored in instances (class variable)
 
     def update(self):
-        if self.alive:
-            self.xpos -= 1
+        if self.alive: #Only update if still alive
+            self.xpos -= speed #Only update XPOS - Constant YPOS for all enemies
+            self.hitbox.x = self.xpos
             if random.random() > .999: #Chance to generate an emeny of same type as self
                 self.__class__() #No need to assign, handled by __init__
 
@@ -65,6 +69,7 @@ class Player(Entity):
         super().__init__('assets/dino.png', enemy=False)
         self.xpos = 50
         self.ypos = size[1] - self.image.get_size()[1]
+        self.hitbox = self.image.get_rect(topleft=(self.xpos, self.ypos))
         self.yvel = 0
         self.jumping = False
         self.ducking = False
@@ -104,8 +109,8 @@ class Cactus(Entity):
 
     def __init__(self):
         super().__init__('assets/cactus.png')
-
         self.ypos = size[1] - self.image.get_size()[1]
+        self.hitbox = self.image.get_rect(topleft=(self.xpos, self.ypos))
 
 class Bird(Entity):
 
@@ -115,12 +120,19 @@ class Bird(Entity):
         self.type = random.randint(0,2) #High: 0, Mid: 1, Low: 2
         super().__init__('assets/bird.png')
         self.ypos = 100 + (50 * self.type)
+        self.hitbox = self.image.get_rect(topleft=(self.xpos, self.ypos))
 
 #Generate initial enemies to work off of - Otherwise never created
 Bird()
 Cactus()
 
 def play(networks):
+
+    def gameover():
+        for network in players:
+            scores[network] = players[network].score #Get score for each network
+
+        return scores
 
     scores = {}
     players = {}
@@ -132,15 +144,21 @@ def play(networks):
 
     while True:
 
-        '''for event in pygame.event.get():
+        for event in pygame.event.get():
             if event.type==pygame.QUIT:
-                quit()'''
+                quit()
 
         screen.fill((255,255,255))
 
         for network in networks:
 
-            curr_player = players[network]
+            try:
+                curr_player = players[network]
+            except KeyError:
+                print(players)
+                if players == {}:
+                    gameover() #All players dead
+                continue #Player removed due to death - Work with next player
 
             if curr_player.alive:
                 output = network.activate()
@@ -169,8 +187,3 @@ def play(networks):
 
         pygame.display.flip()
         clock.tick(30)
-
-    for network in players:
-        scores[network] = players[network].score #Get score for each network
-
-    return scores

@@ -157,14 +157,12 @@ class Network():
 
 class Neuron():
 
-    gin = {}
-
     def __init__(self, inputs, layer, output=None, md="Hidden"):
         self.inputs = inputs #Dict: {Neuron: Weight}
         self.output = output
         self.layer = layer
         layer.neurons.append(self) #Add self to list of neurons in layer
-        self.md = md #Determine if output neuron
+        self.md = md #Determine if output neuron later
 
     def activate(self):
 
@@ -188,6 +186,7 @@ class Connection():
 
         if self.neurons in Connection.gin:
             self.gin = Connection.gin[self.neurons]
+            print(self.gin)
         else:
             Connection.gin[self.neurons] = max(list(Connection.gin.values()))+1
 
@@ -223,7 +222,7 @@ def compatibility(c1, c2, c3, network1, network2, threshold):
 
     for i in range(min(len(network1.connections), len(network2.connections))):
         if network1.connections[i].gin == network2.connections[i].gin:
-            weight_diff_matching.append(math.abs(
+            weight_diff_matching.append(abs(
                 network1.connections[i].gin - network2.connections[i].gin
             ))
 
@@ -287,7 +286,7 @@ def crossover(network_1, network_2):
         network_1.n_outputs
     )
 
-def create_population(size, inputs, input_layer, n_outputs):
+def create_population(size, inputs, input_layer, n_outputs, bias):
 
     population = []
 
@@ -314,7 +313,7 @@ def create_population(size, inputs, input_layer, n_outputs):
 
         population.append(Network(
             [],
-            [], ## TODO: Add Inputs
+            inputs + [bias],
             outputs
         )) #Create empty network with only outputs and inputs
 
@@ -357,7 +356,7 @@ def main():
             md="input"
         ))
 
-    population = create_population(50, inputs, input_layer, 2)
+    population = create_population(50, inputs, input_layer, 2, bias)
 
     for network in population:
         network.fitness = network.calc_fitness()
