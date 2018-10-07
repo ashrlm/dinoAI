@@ -17,7 +17,7 @@ def play(networks):
     size = (1350, 675)
     screen = pygame.display.set_mode(size)
     gravity = 2
-    speed = 10
+    speed = 1
 
     class Entity():
 
@@ -130,9 +130,10 @@ def play(networks):
             self.hitbox = self.image.get_rect(topleft=(self.xpos, self.ypos))
 
     #Generate initial enemies to work off of - Otherwise never created
+    '''
     Bird()
     Cactus()
-
+    '''
     global scores
     scores = {}
     global players
@@ -185,6 +186,12 @@ def play(networks):
                 del players[network] #Remove from list of avaliable players
 
             curr_player.update()
+
+        for network in players:
+            if players[network].score % 100 == 0 and players[network].alive:
+                speed += 1
+                print(speed)
+                break
 
         pygame.display.flip()
         clock.tick(30)
