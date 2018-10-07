@@ -10,7 +10,7 @@
         # duc
         # NB: If neither condition has a confidence >= .5, then the player wil continue as usual
 
-## TODO: Allow multiple plays - Maybe handled by game.py
+## TODO: ADebug XOVER
 
 #Prebuilt Libraries
 import random
@@ -39,6 +39,12 @@ class Network():
         self.species = self.speciate()
         self.fitness = -1
         self.adjusted_fitness = -1
+
+        self.inputs = []
+
+        for neuron in self.neurons:
+            if neuron.md == 'input':
+                self.inputs.append(neuron)
 
     def speciate(self):
         for species in Species.species:
@@ -69,87 +75,98 @@ class Network():
     def mutate_connection_add(self):
         if random.random() < self.add_connection_rate:
 
-            avaliable_neurons = self.neurons
-
             neuron_0 = self.neurons[0]
             neuron_1 = self.neurons[1]
 
-            while neuron_0.layer != neuron_1.layer:
 
-                neuron_0 = avalable_neurons[random.randint(0, len(avalable_neurons) - 1)]
-                avaliable_neurons.remove(neuron_0)
+            while neuron_0.md == neuron_1.md or neuron_0.layer.index > neuron_1.layer.index:
 
-                neuron_1 = avalable_neurons[random.randint(0, len(avalable_neurons) - 1)]
-                avaliable_neurons.remove(neuron_1)
+                neuron_0 = random.choice(self.neurons)
+                neuron_1 = random.choice(self.neurons)
 
             self.connections.append(Connection(
                 (neuron_0,
                 neuron_1),
-                random.absolute(-1,1)
+                random.uniform(-1,1)
             ))
 
     def mutate_connection_edit(self):
-        if random.random() <= self.mutate_weight_uniform:
-            random_add = random.absolute(-1, 1)
+        if random.random() <= self.mutate_weight_uniform and self.connections:
+            random_add = random.uniform(-1, 1)
             connection = random.choice(self.connections)
             connection.weight += random_add
-        elif random.random() <= self.mutate_weight_random:
+        elif random.random() <= self.mutate_weight_random and self.connections:
             connection = random.choice(self.connections)
-            connection.weight = random.absolute(-1, 1)
+            connection.weight = random.uniform(-1, 1)
 
     def mutate_node_add(self):
-        min_layer = 0
-        max_layer = 0
+        if random.random() < self.add_node_rate and self.connections:
+            min_layer = 0
+            max_layer = 0
 
-        for neuron in self.neurons:
-            if neuron.layer.index < min_layer:
-                min_layer = neuron.layer.index
-            elif neuron.layer.index < max_layer:
-                max_layer = neuron.layer.index
+            for neuron in self.neurons:
+                if neuron.layer.index < min_layer:
+                    min_layer = neuron.layer.index
+                elif neuron.layer.index > max_layer and neuron.layer.index != float('inf'):
+                    max_layer = neuron.layer.index
 
-        layer_index = random.randint(min_layer+1, max_layer-1)
-        layer = Layer.layers[layer_index]
+            if (min_layer, max_layer) == (0, 0): #This occurs on initial add, due to the disallowment of the output neurons
+                layer_index = 1
 
-        connections = []
+            else:
+                layer_index = random.randint(min_layer+1, max_layer-1)
 
-        for connection in self.connections:
-            if connection.neurons[0] == layer_index-1 and connection.neurons[1] == layer_index+1:
-                connection.append(connection)
+            try:
+                layer = Layer.layers[layer_index]
 
-        split_connection = random.choice(connections)
+            except IndexError: #Layer does not exist
+                Layer(
+                    layer_index,
+                    []
+                )
 
+            connections = []
 
+            for connection in self.connections:
 
-        new_neuron = Neuron(
-            split_connection.neurons[1].inputs,
-            layer
-        )
+                if connection.neurons[0].layer.index == layer_index-1 and connection.neurons[1].layer.index in (layer_index+1, float('inf')):
+                    connections.append(connection)
 
-        self.neurons.append(new_neuron)
-
-        self.connections[self.connections.index(split_connection.neurons[0])].activated = False
-
-        self.connections.append(Connection(
-            (split_connection.neurons[0],
-            new_neuron,
-            layer
-        )))
-
-        self.connnections.append(Connection(
-            (new_neuron,
-            split_connection.neurons[1]),
-            split_connection.weight
-        ))
-
-    def adjusted_fitness(self):
-        return self.fitness / len(self.species.population)
-
-    def speciate(self):
-        for species in Species.species:
-            if compatibility(c1, c2, c3, self, species.representative, threshold):
-                species.add(self)
+            try:
+                split_connection = random.choice(connections)
+            except:
                 return None
-        Species.species.append(Species([self]))
+
+            new_neuron = Neuron(
+                split_connection.neurons[1].inputs,
+                layer
+            )
+
+            self.neurons.append(new_neuron)
+
+            split_connection.activated = False
+
+            self.connections.append(Connection(
+                (split_connection.neurons[0],
+                new_neuron),
+                1
+            ))
+
+            self.connections.append(Connection(
+                (new_neuron,
+                split_connection.neurons[1]),
+                split_connection.weight
+            ))
+
+        def adjusted_fitness(self):
+            return self.fitness / len(self.species.population)
+
+        def speciate(self):
+            for species in Species.species:
+                if compatibility(c1, c2, c3, self, species.representative, threshold):
+                    species.add(self)
+                    return None
+            Species.species.append(Species([self]))
 
 
 class Neuron():
@@ -184,7 +201,10 @@ class Connection():
         if self.neurons in Connection.gin:
             self.gin = Connection.gin[self.neurons]
         else:
-            Connection.gin[self.neurons] = max(list(Connection.gin.values()))+1
+            try:
+                Connection.gin[self.neurons] = max(list(Connection.gin.values()))+1
+            except:
+                Connection.gin[self.neurons] = 0
 
 class Species():
 
@@ -261,7 +281,7 @@ def crossover(network_1, network_2):
 
     for i in range(len(larger_network.connections)):
         try:
-            if network_1.connections[i].gil == network_2.connections[i].gil:
+            if network_1.connections[i].gin == network_2.connections[i].gin:
                 new_connections.append(
                     random.choice(
                         network_1.connections[i],
@@ -277,13 +297,13 @@ def crossover(network_1, network_2):
 
     for connection in new_connections:
         if connection.neurons[0] not in new_neurons:
-            new_neurons.append(connection.nuerons[0])
+            new_neurons.append(connection.neurons[0])
         if connection.neurons[1] not in new_neurons:
             new_neurons.append(connection.neurons[1])
 
     return Network(
         new_connections,
-        new_neurons,
+        network_1.inputs + new_neurons,
         network_1.outputs
     )
 
@@ -301,7 +321,7 @@ def create_population(size, inputs, input_layer, n_outputs, bias):
         md = [
             "jump",
             "duck"
-        ] #
+        ]
 
         for i in range(n_outputs):
             outputs.append(Neuron(
@@ -359,16 +379,16 @@ def main():
 
     population = create_population(50, inputs, input_layer, 2, bias)
 
-    for species in Species.species:
-        species.fitness()
-
     while True:
+
+        for species in Species.species:
+            species.fitness()
+
         pop_scored = {}
         for network in population:
             pop_scored[network] = network.fitness
 
         ranked = rank(pop_scored)
-        print("The top score was", list(ranked.values())[0])
         population = []
 
         ranked = list(ranked.keys())
@@ -379,6 +399,7 @@ def main():
 
         for i in range(0, len(ranked)-1, 2):
             population.append(crossover(ranked[i], ranked[i+1]))
+        print(401)
 
         for i in range(49 - len(population)): #Mutate enough to fill population to 50
             if random.random() <= .5: #Select random number, if <= .5 chance to mutate connection
