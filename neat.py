@@ -24,8 +24,7 @@
         # NB: Using modified sigmoid ((2/(1+e^-x)) - 1) as activation to allow confidence in range(-1,1)
 
 # BUG: In the activation funciton for each neuron, we are consistently getting 0
-# This is likely because when mutation occurs, the neurons do not have their inputs updated accordingly.
-
+# This is because when mutation occurs, the neurons do not have their inputs updated accordingly. FIX ASAP!!
 
 #Prebuilt Libraries
 import random
@@ -77,7 +76,6 @@ class Network():
         output = None
 
         for neuron in self.outputs:
-            print('o', neuron.output)
             if neuron.output > confidence:
                 confidence = neuron.output
                 output = neuron
@@ -100,10 +98,14 @@ class Network():
                 neuron_0 = random.choice(self.neurons)
                 neuron_1 = random.choice(self.neurons)
 
+                conn_weight = random.uniform(-1,1)
+
+                neuron_1.inputs[neuron_0] = conn_weight
+
             self.connections.append(Connection(
                 (neuron_0,
                 neuron_1),
-                random.uniform(-1,1)
+                conn_weight
             ))
 
     def mutate_connection_edit(self):
@@ -115,7 +117,7 @@ class Network():
             connection = random.choice(self.connections)
             connection.weight = random.uniform(-1, 1)
 
-    def mutate_node_add(self):
+    def mutate_node_add(self): # BUG: Connection not added to neuron inputs
         if random.random() < self.add_node_rate and self.connections:
             min_layer = 0
             max_layer = 0
@@ -199,12 +201,18 @@ class Neuron():
         if self.output:
             return self.output
 
-        weighted_input = 7
+        weighted_input = 0
 
         for input in self.inputs:
-            weighted_input += input.out * self.inputs[input]
+            weighted_input += input.output * self.inputs[input]
 
-        self.output = (2 / (1 + (1+math.e **-(weighted_input)))) - 1
+        try:
+            self.output = round((2 / (1 + (math.e **-(weighted_input)))) - 1, 4)
+        except OverflowError:
+            if weighted_input > 0:
+                self.output = 1
+            else:
+                self.output = -1
 
 class Connection():
 
@@ -379,7 +387,7 @@ def main():
 
     #Bias Neuron Generation
     bias = Neuron(
-        [],
+        {},
         input_layer,
         output=1,
         md="Bias"
@@ -389,7 +397,7 @@ def main():
     inputs = []
     for i in range(7):
         inputs.append(Neuron(
-            [],
+            {},
             input_layer,
             md="input"
         ))
