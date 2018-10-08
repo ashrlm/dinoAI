@@ -1,16 +1,31 @@
 #!/usr/bin/env python3
+
 # __main__
     # This is the main script for the dino game, with the game logic/graphics
     # being handled by game.py
 
 #
+#__inputs__
+#   This program has 7 inputs + the bias neuron (NB: All measurments in px)
+        # Distance to next obstacle
+        # Height of next obstacle
+        # Width of obstacle
+        # Bird Height
+        # speed
+        # Player YPOS (For determining ducking)
+        # Obstacle gap
+
+
 # __outputs__
     # There are 2 Outputs:
         # jump
         # duc
         # NB: If neither condition has a confidence >= .5, then the player wil continue as usual
+        # NB: Using modified sigmoid ((2/(1+e^-x)) - 1) as activation to allow confidence in range(-1,1)
 
-## TODO: ADebug XOVER
+# BUG: In the activation funciton for each neuron, we are consistently getting 0
+# This is likely because when mutation occurs, the neurons do not have their inputs updated accordingly.
+
 
 #Prebuilt Libraries
 import random
@@ -34,7 +49,7 @@ class Network():
         self.outputs = outputs
         self.mutate_weight_uniform = 0.72
         self.mutate_weight_random = 0.08
-        self.add_connection_rate = 0.05
+        self.add_connection_rate = 0.25
         self.add_node_rate = 0.03
         self.species = self.speciate()
         self.fitness = -1
@@ -62,6 +77,7 @@ class Network():
         output = None
 
         for neuron in self.outputs:
+            print('o', neuron.output)
             if neuron.output > confidence:
                 confidence = neuron.output
                 output = neuron
@@ -79,7 +95,7 @@ class Network():
             neuron_1 = self.neurons[1]
 
 
-            while neuron_0.md == neuron_1.md or neuron_0.layer.index > neuron_1.layer.index:
+            while neuron_0.layer.index >= neuron_1.layer.index:
 
                 neuron_0 = random.choice(self.neurons)
                 neuron_1 = random.choice(self.neurons)
@@ -183,11 +199,12 @@ class Neuron():
         if self.output:
             return self.output
 
-        weighted_input = 0
+        weighted_input = 7
+
         for input in self.inputs:
             weighted_input += input.out * self.inputs[input]
-        self.output = max(0, weighted_input)
 
+        self.output = (2 / (1 + (1+math.e **-(weighted_input)))) - 1
 
 class Connection():
 
@@ -284,8 +301,8 @@ def crossover(network_1, network_2):
             if network_1.connections[i].gin == network_2.connections[i].gin:
                 new_connections.append(
                     random.choice(
-                        network_1.connections[i],
-                        network_2.connections[i]
+                        (network_1.connections[i],
+                        network_2.connections[i])
                     )
                 )
             else:
@@ -399,7 +416,6 @@ def main():
 
         for i in range(0, len(ranked)-1, 2):
             population.append(crossover(ranked[i], ranked[i+1]))
-        print(401)
 
         for i in range(49 - len(population)): #Mutate enough to fill population to 50
             if random.random() <= .5: #Select random number, if <= .5 chance to mutate connection
