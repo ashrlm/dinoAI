@@ -4,7 +4,8 @@ import random
 import pygame
 from pygame.locals import *
 
-# TODO: Fix removal of unneeded enemies - Significant performace drain
+# TODO: Fix removal of unneeded enemies - Allow next TODO
+# TODO: Related to above - generate enemies when either has less than 3
 
 # TODO: Scaling - Fix "Magic numbers"
 
@@ -81,29 +82,41 @@ def play(networks):
             if not self.jumping:
                 self.jumping = True
                 self.yvel = 25
+                self.hitbox.x = self.xpos
+                self.hitbox.y = self.ypos
 
         def duck(self):
             self.ducking = True
 
         def update(self):
             self.score += 1
+            self.hitbox.x = self.xpos
+            self.hitbox.y = self.ypos
 
             if self.ducking:
                 self.image = pygame.image.load('assets/dinoduck.png')
                 self.hitbox = self.image.get_rect()
+                self.hitbox.x = self.xpos
+                self.hitbox.y = self.ypos
 
             if self.jumping:
                 self.ducking = False
                 self.image = pygame.image.load('assets/dino.png')
                 self.hitbox = self.image.get_rect() #Stop ducking when network wants to jump
+                self.hitbox.x = self.xpos
+                self.hitbox.y = self.ypos
 
                 if self.ypos - self.yvel > size[1] - self.image.get_size()[1]:
                     self.ypos = size[1] - self.image.get_size()[1]
                     self.jumping = False
+                    self.hitbox.x = self.xpos
+                    self.hitbox.y = self.ypos
 
                 else:
                     self.ypos -= self.yvel
                     self.yvel -= gravity
+                    self.hitbox.x = self.xpos
+                    self.hitbox.y = self.ypos
 
 
 
