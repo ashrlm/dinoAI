@@ -4,14 +4,11 @@ import random
 import pygame
 from pygame.locals import *
 
-# TODO: Update Input Neuron outputs as game progresses - Allow decisions based
-# on current information
-
 # TODO: Fix removal of unneeded enemies - Significant performace drain
 
 # TODO: Scaling - Fix "Magic numbers"
 
-# TODO: Add variable speed
+# TODO: Fix bird height
 
 def play(networks):
     size = (1350, 675)
@@ -27,7 +24,7 @@ def play(networks):
             self.image = pygame.image.load(img_path)
             self.alive = True
             ## NOTE: Hitboxes are handled by self.__init__, as Xpos and Ypos are needed,
-            ##       and they are not generated until then due to changing necessities
+            ##       and they are not generated until then due to changing necessities for different classes
 
             if enemy:
 
@@ -130,10 +127,10 @@ def play(networks):
             self.hitbox = self.image.get_rect(topleft=(self.xpos, self.ypos))
 
     #Generate initial enemies to work off of - Otherwise never created
-    '''
+
     Bird()
     Cactus()
-    '''
+
     global scores
     scores = {}
     global players
@@ -163,6 +160,20 @@ def play(networks):
                 continue #Player removed due to death - Work with next player
 
             if curr_player.alive:
+
+                input_data = []
+                input_data.append(Entity.enemies[0].xpos - curr_player.xpos) #Distance to next Obstacle
+                input_data.append(Entity.enemies[0].hitbox.size[1]) #Height of next obstacle
+                input_data.append(Entity.enemies[0].hitbox.size[0]) #Width of next obstacle
+                input_data.append(Bird.instances[0].ypos) #Bird height
+                input_data.append(speed) #speed
+                input_data.append(curr_player.ypos) #Player YPOS - Determine ducking
+                input_data.append(Entity.enemies[1].xpos - Entity.enemies[0].xpos) #Gap between next 2 obstacles
+
+
+                for i in range(len(input_data)):
+                    network.inputs[i].output = input_data[i]
+
                 output = network.activate()
                 try:
                     if output.md=="jump":
@@ -190,7 +201,6 @@ def play(networks):
         for network in players:
             if players[network].score % 100 == 0 and players[network].alive:
                 speed += 1
-                print(speed)
                 break
 
         pygame.display.flip()
