@@ -7,6 +7,19 @@ from pygame.locals import *
 # TODO: Fix removal of unneeded enemies - Allow next TODO
 # TODO: Related to above - generate enemies when either has less than 3
 
+#TODO: Consisentent loops iteration time:
+#   The game has variable speeds, which could be fixed by adding a fixed number of networks to iterate for, taken from the initial number,
+#   as well as a fixed number of enemies (6).
+#
+#   E.G:
+#   num_networks = len(networks)
+#   for i in range(num_networks):
+#   try:
+#       networks[i]
+#       # MAGIC
+#   except IndexError #Less networks than initial
+#       pass
+
 # TODO: Scaling - Fix "Magic numbers"
 
 # TODO: Fix bird height
@@ -218,3 +231,5 @@ def play(networks):
 
         pygame.display.flip()
         clock.tick(30)
+
+    return scores
