@@ -23,7 +23,7 @@
         # NB: If neither condition has a confidence >= .5, then the player wil continue as usual
         # NB: Using modified sigmoid ((2/(1+e^-x)) - 1) as activation to allow confidence in range(-1,1)
 
-# TODO: Fix speed and collision logic - Glitching through enemies
+# TODO: Fix so enemies only update once, not each time a player is checked
 
 #Prebuilt Libraries
 import random
@@ -99,13 +99,14 @@ class Network():
 
             conn_weight = random.uniform(-1,1)
 
-            neuron_1.inputs[neuron_0] = conn_weight
+            new_conn = Connection(
+                            (neuron_0,
+                            neuron_1),
+                            conn_weight
+                        )
 
-            self.connections.append(Connection(
-                (neuron_0,
-                neuron_1),
-                conn_weight
-            ))
+            neuron_1.inputs.append(new_conn)
+            self.connections.append(new_conn)
 
     def mutate_connection_edit(self):
         if random.random() <= self.mutate_weight_uniform and self.connections:
@@ -116,7 +117,7 @@ class Network():
             connection = random.choice(self.connections)
             connection.weight = random.uniform(-1, 1)
 
-    def mutate_node_add(self): # BUG: Connection not added to neuron inputs
+    def mutate_node_add(self):
         if random.random() < self.add_node_rate and self.connections:
             min_layer = 0
             max_layer = 0
@@ -163,17 +164,24 @@ class Network():
 
             split_connection.activated = False
 
-            self.connections.append(Connection(
+            new_conn_0 = Connection(
                 (split_connection.neurons[0],
                 new_neuron),
                 1
-            ))
+            )
 
-            self.connections.append(Connection(
+            new_conn_1 = Connection(
                 (new_neuron,
                 split_connection.neurons[1]),
                 split_connection.weight
-            ))
+            )
+
+            self.connections.append(new_conn_0)
+            self.connections.append(new_conn_1)
+
+            new_neuron.inputs.append(new_conn_0)
+            split_connection.neurons[1].inputs.append(new_conn_1)
+
 
         def adjusted_fitness(self):
             return self.fitness / len(self.species.population)
@@ -189,7 +197,7 @@ class Network():
 class Neuron():
 
     def __init__(self, inputs, layer, output=None, md="Hidden"):
-        self.inputs = inputs #Dict: {Neuron: Weight}
+        self.inputs = inputs #List of connection objects
         self.output = output
         self.layer = layer
         layer.neurons.append(self) #Add self to list of neurons in layer
@@ -202,8 +210,13 @@ class Neuron():
 
         weighted_input = 0
 
-        for input in self.inputs:
-            weighted_input += input.output * self.inputs[input]
+        for connection in self.inputs:
+            try:
+                weighted_input += (connection.weight * connection.neurons[0].output)
+            except TypeError:
+                print(self.layer.index)
+                print(connection.neurons[0].layer.index)
+                quit()
 
         try:
             self.output = round((2 / (1 + (math.e **-(weighted_input)))) - 1, 4)
@@ -353,7 +366,7 @@ def create_population(size, inputs, input_layer, n_outputs, bias):
 
         for i in range(n_outputs):
             outputs.append(Neuron(
-                {},
+                [],
                 output_layer,
                 md=md[0]
             )) #Create outputs
@@ -390,7 +403,7 @@ def main():
 
     #Bias Neuron Generation
     bias = Neuron(
-        {},
+        [],
         input_layer,
         output=1,
         md="Bias"
@@ -400,7 +413,7 @@ def main():
     inputs = []
     for i in range(7):
         inputs.append(Neuron(
-            {},
+            [],
             input_layer,
             md="input"
         ))
@@ -424,8 +437,6 @@ def main():
         for net in ranked[:5]: #Keep the top 5 from curr population
             population.append(net)
             ranked.remove(net) #Remove so not used in XOver
-
-        print(len(ranked))
 
         for i in range(0, len(ranked)-1, 2):
             population.append(crossover(ranked[i], ranked[i+1]))
