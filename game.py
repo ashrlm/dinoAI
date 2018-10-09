@@ -4,14 +4,14 @@ import random
 import pygame
 from pygame.locals import *
 
-# TODO: ASAP - Player Clipping through obstacle
+# TODO: Bird height - ASAP
 # TODO: Scaling - Fix "Magic numbers"
 
 def play(networks):
     size = (1350, 675)
     screen = pygame.display.set_mode(size)
     gravity = 2
-    speed = 1
+    speed = 10
 
     class Entity():
 
@@ -156,6 +156,10 @@ def play(networks):
 
         screen.fill((255,255,255))
 
+        for enemy in Entity.enemies:
+            enemy.update()
+            screen.blit(enemy.image, (enemy.xpos, enemy.ypos))
+
         for network in networks:
 
             try:
@@ -193,8 +197,6 @@ def play(networks):
             screen.blit(curr_player.image, (curr_player.xpos, curr_player.ypos))
 
             for enemy in Entity.enemies:
-                enemy.update()
-                screen.blit(enemy.image, (enemy.xpos, enemy.ypos))
                 if curr_player.hitbox.colliderect(enemy.hitbox):
                     curr_player.alive = False
 
@@ -205,7 +207,7 @@ def play(networks):
             curr_player.update()
 
         for network in players:
-            if players[network].score % 500 == 0 and players[network].alive:
+            if players[network].score % 100 == 0 and players[network].alive:
                 speed += 1
                 break
 
