@@ -25,8 +25,8 @@ def play(networks):
 
             if enemy:
 
-                if self.__class__.instances != []: #Generate XPOS - YPOS HANDLED BY SELF CLASS
-                    self.xpos = self.__class__.instances[-1].xpos + random.randint(100, 1000)
+                if Entity.enemies != []: #Generate XPOS - YPOS HANDLED BY SELF CLASS
+                    self.xpos = Entity.enemies[-1].xpos + random.randint(500, 1000)
                 else:
                     self.xpos = size[0]
 
@@ -53,10 +53,6 @@ def play(networks):
             else: #If entity dead, remove them from list(s)
                 Entity.enemies.remove(self)
                 self.__class__.instances.remove(self)
-
-            if random.random() > .999999: #Very infrequently add enemies
-                # NOTE: Edit the frequency later
-                self.__class__()
 
 
     class Player(Entity):
@@ -131,7 +127,7 @@ def play(networks):
         def __init__(self):
             self.type = random.randint(0,2) #High: 0, Mid: 1, Low: 2
             super().__init__('assets/bird.png')
-            self.ypos = (200 * self.type) + 700
+            self.ypos = (100 * self.type) + 200
             self.hitbox = self.image.get_rect(topleft=(self.xpos, self.ypos))
 
     #Generate initial enemies to work off of - Otherwise never created
