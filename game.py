@@ -4,25 +4,8 @@ import random
 import pygame
 from pygame.locals import *
 
-# TODO: Fix removal of unneeded enemies - Allow next TODO
-# TODO: Related to above - generate enemies when either has less than 3
-
-#TODO: Consisentent loops iteration time:
-#   The game has variable speeds, which could be fixed by adding a fixed number of networks to iterate for, taken from the initial number,
-#   as well as a fixed number of enemies (6).
-#
-#   E.G:
-#   num_networks = len(networks)
-#   for i in range(num_networks):
-#   try:
-#       networks[i]
-#       # MAGIC
-#   except IndexError #Less networks than initial
-#       pass
-
+# TODO: Bird height fix
 # TODO: Scaling - Fix "Magic numbers"
-
-# TODO: Fix bird height
 
 def play(networks):
     size = (1350, 675)
@@ -64,13 +47,12 @@ def play(networks):
             if self.alive: #Only update if still alive
                 self.xpos -= speed #Only update XPOS - Constant YPOS for all enemies
                 self.hitbox.x = self.xpos
-                if random.random() > .999: #Chance to generate an emeny of same type as self
-                    self.__class__() #No need to assign, handled by __init__
+                if len(self.__class__.instances) < 3: #Chance to generate an emeny of same type as self
+                    self.__class__() #No need to assign, xhandled by __init__
 
             else: #If entity dead, remove them from list(s)
                 Entity.enemies.remove(self)
-                if type(self).__name__ == "Bird":
-                    Bird.birds.remove(self)
+                self.__class__.instances.remove(self)
 
             if random.random() > .999999: #Very infrequently add enemies
                 # NOTE: Edit the frequency later
@@ -149,7 +131,7 @@ def play(networks):
         def __init__(self):
             self.type = random.randint(0,2) #High: 0, Mid: 1, Low: 2
             super().__init__('assets/bird.png')
-            self.ypos = 100 + (50 * self.type)
+            self.ypos = (200 * self.type) + 700
             self.hitbox = self.image.get_rect(topleft=(self.xpos, self.ypos))
 
     #Generate initial enemies to work off of - Otherwise never created
@@ -166,9 +148,9 @@ def play(networks):
         players[network] = Player()
 
     clock = pygame.time.Clock()
+    init_nets = len(networks)
 
-    while players != {}: #Checck not all players dead
-
+    while players != {}: #Check not all players dead
         for event in pygame.event.get():
             if event.type==pygame.QUIT:
                 quit()
