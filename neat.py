@@ -23,8 +23,7 @@
         # NB: If neither condition has a confidence >= .5, then the player wil continue as usual
         # NB: Using modified sigmoid ((2/(1+e^-x)) - 1) as activation to allow confidence in range(-1,1)
 
-# BUG: In the activation funciton for each neuron, we are consistently getting 0
-# This is because when mutation occurs, the neurons do not have their inputs updated accordingly. FIX ASAP!!
+# TODO: Fix speed and collision logic - Glitching through enemies
 
 #Prebuilt Libraries
 import random
@@ -228,8 +227,10 @@ class Connection():
         else:
             try:
                 Connection.gin[self.neurons] = max(list(Connection.gin.values()))+1
+                self.gin = Connection.gin[self.neurons]
             except:
                 Connection.gin[self.neurons] = 0
+                self.gin = Connection.gin[self.neurons]
 
 class Species():
 
