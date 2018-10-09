@@ -98,9 +98,9 @@ class Network():
                 neuron_0 = random.choice(self.neurons)
                 neuron_1 = random.choice(self.neurons)
 
-                conn_weight = random.uniform(-1,1)
+            conn_weight = random.uniform(-1,1)
 
-                neuron_1.inputs[neuron_0] = conn_weight
+            neuron_1.inputs[neuron_0] = conn_weight
 
             self.connections.append(Connection(
                 (neuron_0,
@@ -295,6 +295,8 @@ def crossover(network_1, network_2):
         fitter_net = network_1
     elif network_2.fitness > network_1.fitness:
         fitter_net = network_2
+    else:
+        fitter_net = random.choice((network_1, network_2))
 
     larger_network = network_1
 
@@ -422,10 +424,12 @@ def main():
             population.append(net)
             ranked.remove(net) #Remove so not used in XOver
 
+        print(len(ranked))
+
         for i in range(0, len(ranked)-1, 2):
             population.append(crossover(ranked[i], ranked[i+1]))
 
-        for i in range(49 - len(population)): #Mutate enough to fill population to 50
+        for i in range(50 - len(population)): #Mutate enough to fill population to 50
             if random.random() <= .5: #Select random number, if <= .5 chance to mutate connection
                 if random.random() <= .5: #Do same thing, if <= .5 chance to add connection
                     ranked[random.randint(0, len(ranked)-1)].mutate_connection_add()
@@ -434,7 +438,9 @@ def main():
             else: #Otherwise chance to add neuron
                 ranked[random.randint(0, len(ranked)-1)].mutate_node_add()
 
-        population.append(ranked[-1]) #Keep lowest-performing network to prevent local maximum
+        for net in ranked:
+            population.append(net)
+        population = population[:50]
 
 if __name__ == "__main__":
     main()
