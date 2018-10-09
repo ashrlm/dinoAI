@@ -4,7 +4,7 @@ import random
 import pygame
 from pygame.locals import *
 
-# TODO: Bird height fix
+# TODO: ASAP - Player Clipping through obstacle
 # TODO: Scaling - Fix "Magic numbers"
 
 def play(networks):
@@ -47,13 +47,16 @@ def play(networks):
             if self.alive: #Only update if still alive
                 self.xpos -= speed #Only update XPOS - Constant YPOS for all enemies
                 self.hitbox.x = self.xpos
+
+                if self.xpos <= 0:
+                    self.alive = False
+
                 if len(self.__class__.instances) < 3: #Chance to generate an emeny of same type as self
-                    self.__class__() #No need to assign, xhandled by __init__
+                    self.__class__() #No need to assign, handled by __init__
 
             else: #If entity dead, remove them from list(s)
                 Entity.enemies.remove(self)
                 self.__class__.instances.remove(self)
-
 
     class Player(Entity):
 
@@ -194,7 +197,6 @@ def play(networks):
                 screen.blit(enemy.image, (enemy.xpos, enemy.ypos))
                 if curr_player.hitbox.colliderect(enemy.hitbox):
                     curr_player.alive = False
-                    break
 
             if not curr_player.alive: #Check if the current player is dead
                 scores[network] = curr_player.score #Add score to scores
@@ -203,7 +205,7 @@ def play(networks):
             curr_player.update()
 
         for network in players:
-            if players[network].score % 100 == 0 and players[network].alive:
+            if players[network].score % 500 == 0 and players[network].alive:
                 speed += 1
                 break
 
