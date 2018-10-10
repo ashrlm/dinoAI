@@ -7,9 +7,14 @@ from pygame.locals import *
 # TODO: Bird height - ASAP
 # TODO: Scaling - Fix "Magic numbers"
 
+global generation
+generation = -1
+
 def play(networks):
+    generation += 1
     size = (1350, 675)
     screen = pygame.display.set_mode(size)
+    pygame.display.set_caption("Generation " + str(generation))
     gravity = 2
     speed = 10
 
