@@ -90,6 +90,7 @@ def play(networks):
             if self.ducking:
                 self.image = pygame.image.load('assets/dinoduck.png')
                 self.hitbox = self.image.get_rect()
+                self.ypos = size[1] - self.hitbox.size[1]
                 self.hitbox.x = self.xpos
                 self.hitbox.y = self.ypos
 
@@ -130,13 +131,13 @@ def play(networks):
         def __init__(self):
             self.type = random.randint(0,2) #High: 0, Mid: 1, Low: 2
             super().__init__('assets/bird.png')
-            self.ypos = (100 * self.type) + 200
+            self.ypos = size[1] - self.image.get_size()[1] - (40 * self.type)
             self.hitbox = self.image.get_rect(topleft=(self.xpos, self.ypos))
 
     #Generate initial enemies to work off of - Otherwise never created
 
-    Bird()
     Cactus()
+    Bird()
 
     global scores
     scores = {}
