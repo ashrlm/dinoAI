@@ -11,6 +11,7 @@ global generation
 generation = -1
 
 def play(networks):
+    global generation
     generation += 1
     size = (1350, 675)
     screen = pygame.display.set_mode(size)
