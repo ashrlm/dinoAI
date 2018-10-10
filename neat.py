@@ -92,7 +92,7 @@ class Network():
             neuron_1 = self.neurons[1]
 
 
-            while neuron_0.layer.index >= neuron_1.layer.index:
+            while neuron_0.layer.index >= neuron_1.layer.index and neuron_0.layer.index != float('inf'):
 
                 neuron_0 = random.choice(self.neurons)
                 neuron_1 = random.choice(self.neurons)
@@ -427,6 +427,10 @@ def main():
 
         pop_scored = {}
         for network in population:
+            for connection in network.connections:
+                if connection.neurons[0].layer.index == float('inf'):
+                    print("removed")
+                    network.connections.remove(connection)
             pop_scored[network] = network.fitness
 
         ranked = rank(pop_scored)
