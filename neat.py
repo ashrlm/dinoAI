@@ -21,14 +21,13 @@
         # jump
         # duc
         # NB: If neither condition has a confidence >= .5, then the player wil continue as usual
-        # NB: Using modified sigmoid ((2/(1+e^-x)) - 1) as activation to allow confidence in range(-1,1)
+        # NB: Using modified sigmoid ((2/(1+e^-4.9x)) - 1) as activation to allow confidence in range(-1,1)
 
-# TODO: Fix so enemies only update once, not each time a player is checked
+# TODO: Run sigmoid on all input data to prevent inputs being blown up
 
-#Prebuilt Libraries
+#Libraries
 import random
 import math
-import sys
 
 #Helper Script
 import game
@@ -217,7 +216,7 @@ class Neuron():
                 self.inputs.remove(connection)
 
         try:
-            self.output = round((2 / (1 + (math.e **-(weighted_input)))) - 1, 4)
+            self.output = sigmoid(weighted_input)
         except OverflowError:
             if weighted_input > 0:
                 self.output = 1
@@ -268,6 +267,9 @@ class Layer():
         self.index = index
         self.neurons = neurons
         Layer.layers.append(self)
+
+def sigmoid(x):
+    return round((2 / (1 + (math.e ** (-4.9*x)))) - 1, 4)
 
 def compatibility(c1, c2, c3, network1, network2, threshold):
     neurons_larger = max(len(network1.neurons), len(network2.neurons))
@@ -441,8 +443,6 @@ def main():
             network.connections = list(temp_connections)
 
             pop_scored[network] = network.fitness
-
-        print('\n')
 
         ranked = rank(pop_scored)
         population = []
