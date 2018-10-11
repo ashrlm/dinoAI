@@ -425,17 +425,26 @@ def main():
 
         pop_scored = {}
         for network in population:
+            temp_connections = list(network.connections)
             for connection in network.connections:
-                if connection.neurons[0].layer.index == float('inf') or connection.neurons[0].layer.index >= connection.neurons[1].layer.index:
-                    network.connections.remove(connection)
-                    connection.neurons[1].inputs.remove(connection)
+                if connection.neurons[0].layer.index == float('inf') or connection.neurons[0].layer.index >= connection.neurons[1].layer.index or connection.neurons[0].md in ['duck', 'jump']:
+                    temp_connections.remove(connection)
+                    try:
+                        connection.neurons[1].inputs.remove(connection)
+                    except:
+                        pass
                     try:
                         connection.neurons[0].inputs.remove(connection)
-                        print(1)
                     except:
                         pass
 
+            network.connections = list(temp_connections)
+            if network.connections:
+                print('')
+
             pop_scored[network] = network.fitness
+
+        print('\n')
 
         ranked = rank(pop_scored)
         population = []
