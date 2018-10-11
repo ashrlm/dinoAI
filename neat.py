@@ -439,8 +439,6 @@ def main():
                         pass
 
             network.connections = list(temp_connections)
-            if network.connections:
-                print('')
 
             pop_scored[network] = network.fitness
 
