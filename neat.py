@@ -204,9 +204,9 @@ class Neuron():
 
     def activate(self):
 
-        if self.output:
+        if self.md == "input":
             return self.output
-
+        self.output = None
         weighted_input = 0
 
         for connection in self.inputs:
@@ -220,8 +220,10 @@ class Neuron():
         except OverflowError:
             if weighted_input > 0:
                 self.output = 1
-            else:
+            elif weighted_input < 0:
                 self.output = -1
+            else:
+                self.output = 0
 
 class Connection():
 
