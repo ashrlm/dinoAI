@@ -428,8 +428,7 @@ def main():
         pop_scored = {}
         for network in population:
             for connection in network.connections:
-                if connection.neurons[0].layer.index == float('inf'):
-                    print("removed", connection.neurons[0].layer.index, connection.neurons[1].layer.index, connection)
+                if connection.neurons[0].layer.index == float('inf') or connection.neurons[0].layer.index >= connection.neurons[1].layer.index:
                     network.connections.remove(connection)
                     connection.neurons[1].inputs.remove(connection)
             pop_scored[network] = network.fitness
