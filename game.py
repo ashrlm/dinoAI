@@ -3,6 +3,7 @@
 import random
 import pygame
 from pygame.locals import *
+from neat import sigmoid #Use this on all inputs
 
 # TODO: Bird height - ASAP
 # TODO: Scaling - Fix "Magic numbers"
@@ -190,7 +191,7 @@ def play(networks):
 
 
                 for i in range(len(input_data)):
-                    network.inputs[i].output = input_data[i]
+                    network.inputs[i].output = sigmoid(input_data[i])
 
                 output = network.activate()
                 try:
