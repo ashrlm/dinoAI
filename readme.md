@@ -1,5 +1,6 @@
-So, this is just a cool thing I saw online and decided to try recreate.
-I know my codes really ugly but... so what? Anyways this is an implementation
-of NeAT, which... just read the paper on it. Feel free to do whatever you want
-with this, but I'm honestly just using GitHub to backup my code, and cause
-I really need a profile. 
+# DinoAI
+
+This is a program I made to learn to play [Google Chrome's dinosaur game] (chrome://dino)
+It evolves using NeAT and is made using [Python] (https://www.python.org/downloads/) and Pygame, which can be installed running `pip install pygame` from the command line.
+
+Enjoy.
