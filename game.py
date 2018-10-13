@@ -5,8 +5,7 @@ import pygame
 from pygame.locals import *
 from neat import sigmoid #Use this on all inputs
 
-# TODO: Bird height - ASAP
-# TODO: Scaling - Fix "Magic numbers"
+# TODO: Fix neuron updates
 
 global generation
 generation = -1
@@ -81,13 +80,23 @@ def play(networks):
 
         def jump(self):
             if not self.jumping:
+
+                if self.ducking:
+                    self.ducking = False
+                    self.jumping=True
+                    self.update()
+                    self.jump()
+
                 self.jumping = True
                 self.yvel = 25
+                self.image = pygame.image.load('assets/dino.png')
+                self.hitbox = self.image.get_rect()
                 self.hitbox.x = self.xpos
                 self.hitbox.y = self.ypos
 
         def duck(self):
             self.ducking = True
+            self.jumping = False
 
         def update(self):
             self.score += 1
@@ -197,8 +206,11 @@ def play(networks):
                 try:
                     if output.md=="jump":
                         curr_player.jump()
-                    else:
+                    elif output.md=="duck":
                         players[network].duck()
+                    else:
+                        print("Never happen - Fix ASAP!!!")
+                        quit()
                 except:
                     pass
 
