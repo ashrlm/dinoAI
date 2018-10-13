@@ -56,7 +56,7 @@ class Network():
         self.inputs = []
 
         for neuron in self.neurons:
-            if neuron.md == 'input':
+            if 'input' in neuron.md:
                 self.inputs.append(neuron)
 
     def speciate(self):
@@ -428,11 +428,20 @@ def main():
 
     #Generation of inputs
     inputs = []
+    mds = [
+        'Distance to next obstacle',
+        'Height of next obstacle',
+        'Width of obstacle',
+        'Bird Height',
+        'speed',
+        'Player YPOS (For determining ducking)',
+        'Obstacle gap',
+    ]
     for i in range(7):
         inputs.append(Neuron(
             [],
             input_layer,
-            md="input"
+            md='input ' + mds[i]
         ))
 
     population = create_population(50, inputs, input_layer, 2, bias)
