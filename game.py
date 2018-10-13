@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 
 import random
+import math
 import pygame
 from pygame.locals import *
-from neat import sigmoid #Use this on all inputs
 
-# TODO: Fix neuron updates
+# TODO: Fix neuron updates - Stuck
 
 global generation
 generation = -1
+
+def sigmoid(x): #Custom, streched out sigmoid to prevent inputs being blown up
+    sig_1 = round((100 / (1 + (math.e ** (-.001*x)))) - 50, 4)
+    sig_2 = (2 / (1 + (math.e ** (-.1*sig_1)))) - 1
+    return sig_2
 
 def play(networks):
     global generation
@@ -201,6 +206,7 @@ def play(networks):
 
                 for i in range(len(input_data)):
                     network.inputs[i].output = sigmoid(input_data[i])
+                print('' )
 
                 output = network.activate()
                 try:

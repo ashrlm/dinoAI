@@ -275,7 +275,7 @@ class Layer():
         Layer.layers.append(self)
 
 def sigmoid(x):
-    return round((2 / (1 + (math.e ** (-4.9*x)))) - 1, 4)
+    return round((2 / (1 + (math.e ** (-3*x)))) - 1, 4)
 
 def compatibility(c1, c2, c3, network1, network2, threshold):
     neurons_larger = max(len(network1.neurons), len(network2.neurons))
@@ -412,7 +412,7 @@ def main():
         [],
         input_layer,
         output=1,
-        md="Bias"
+        md="input bias"
     )
 
     #Generation of inputs
@@ -459,7 +459,7 @@ def main():
 
             network.connections = list(temp_connections)
 
-            if len(network.connections) > most_connections:
+            if len(network.connections) >= most_connections and network.connections:
                 most_connections = len(network.connections)
                 for connection in network.connections:
                     print(connection.neurons, connection.neurons[0].md, connection.neurons[0].output, connection.neurons[1].md, connection.neurons[1].output, connection.weight, connection.activated)
