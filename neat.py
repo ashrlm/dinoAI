@@ -24,8 +24,6 @@
         # NB: Using modified sigmoid ((2/(1+e^-4.9x)) - 1) as activation to allow confidence in range(-1,1)
 
 # TODO: Fix mutate_node_add method - Only one connection added
-# TODO: Remove debug statement
-# TODO: Fix mutate_node_add to create new layers - Only 1 layer ever added
 # TODO: Duplicate connections
 
 #Libraries
@@ -134,29 +132,13 @@ class Network():
 
     def mutate_node_add(self):
         if random.random() < self.add_node_rate and self.connections:
-            min_layer = 1
-            max_layer = 0
-            neuron_hidden = False
-
-            for neuron in self.neurons:
-                if neuron.layer.index < min_layer and neuron.layer.index:
-                    min_layer = neuron.layer.index
-                    neuron_hidden = True
-                elif neuron.layer.index > max_layer:
-                    if neuron.layer.index != float('inf'):
-                        max_layer = neuron.layer.index
-                        neuron_hidden = True
-
-            if not neuron_hidden: #This occurs on initial add, due to the disallowment of the output neurons
-                layer_index = 1
-
-            else:
-                layer_index = random.randint(min_layer, max_layer)
+            layer_index = random.randint(1,9999999999999999999) # Some arbitrarily large number - Minimal restriction
 
             for layer_ in Layer.layers:
                 if layer_.index == layer_index:
                     layer = layer_
                     break
+
 
             else: #Layer does not exist
                 layer = Layer(
