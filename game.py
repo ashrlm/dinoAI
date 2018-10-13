@@ -206,7 +206,6 @@ def play(networks):
 
                 for i in range(len(input_data)):
                     network.inputs[i].output = sigmoid(input_data[i])
-                print('' )
 
                 output = network.activate()
                 try:

@@ -93,7 +93,7 @@ class Network():
             neuron_1 = self.neurons[1]
 
             loop_end = False
-            while neuron_0 in neuron_1.inputs or neuron_0.layer.index >= neuron_1.layer.index or neuron_0.layer.index == float('inf') or not loop_end:
+            while neuron_0 in neuron_1.inputs or neuron_0.layer.index >= neuron_1.layer.index or neuron_0.layer.index == float('inf') or not loop_end or ('bias' in neuron_0.md.lower() and neuron_1.layer.index == float('inf')):
 
                 loop_end = True
                 temp = None
@@ -159,7 +159,7 @@ class Network():
                 )
 
             new_neuron = Neuron(
-                split_connection.neurons[1].inputs,
+                [],
                 layer
             )
 
@@ -179,10 +179,18 @@ class Network():
                 split_connection.weight
             )
 
+            new_conn_bias = Connection(
+                (bias,
+                new_neuron),
+                random.uniform(-1,1)
+            )
+
             self.connections.append(new_conn_0)
             self.connections.append(new_conn_1)
+            self.connections.append(new_conn_bias)
 
             new_neuron.inputs.append(new_conn_0)
+            new_neuron.inputs.append(new_conn_bias)
             split_connection.neurons[1].inputs.append(new_conn_1)
 
         def adjusted_fitness(self):
@@ -408,6 +416,7 @@ def main():
     )
 
     #Bias Neuron Generation
+    global bias
     bias = Neuron(
         [],
         input_layer,
@@ -459,7 +468,7 @@ def main():
 
             network.connections = list(temp_connections)
 
-            if len(network.connections) >= most_connections and network.connections:
+            if len(network.connections) > most_connections:
                 most_connections = len(network.connections)
                 for connection in network.connections:
                     print(connection.neurons, connection.neurons[0].md, connection.neurons[0].output, connection.neurons[1].md, connection.neurons[1].output, connection.weight, connection.activated)
