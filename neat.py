@@ -29,6 +29,7 @@
 #Libraries
 import random
 import math
+import sys
 
 #Helper Script
 import game
@@ -132,7 +133,18 @@ class Network():
 
     def mutate_node_add(self):
         if random.random() < self.add_node_rate and self.connections:
-            layer_index = random.randint(1,9999999999999999999) # Some arbitrarily large number - Minimal restriction
+
+            connections = []
+
+            split_connection = random.choice(self.connections)
+
+            lower_bound = split_connection.neurons[0].layer.index + 1 #+1 to make sure it doesn't add it to where the input for this connection is
+            upper_bound = split_connection.neurons[1].layer.index - 1 #-1 to make sure it doesn't add it to where the output for the connection is
+
+            if upper_bound == float('inf'): #Output neurons
+                upper_bound = int(sys.float_info.max) #Some unnecesarily large number - Allow ~any int as random.uniform(0,float('inf')) will always return float('inf')
+
+            layer_index = random.randint(lower_bound, upper_bound)
 
             for layer_ in Layer.layers:
                 if layer_.index == layer_index:
@@ -145,18 +157,6 @@ class Network():
                     layer_index,
                     []
                 )
-
-            connections = []
-
-            for connection in self.connections:
-
-                if connection.neurons[0].layer.index == layer_index-1 and connection.neurons[1].layer.index in (layer_index+1, float('inf')):
-                    connections.append(connection)
-
-            try:
-                split_connection = random.choice(connections)
-            except:
-                return None
 
             new_neuron = Neuron(
                 split_connection.neurons[1].inputs,
@@ -184,7 +184,6 @@ class Network():
 
             new_neuron.inputs.append(new_conn_0)
             split_connection.neurons[1].inputs.append(new_conn_1)
-
 
         def adjusted_fitness(self):
             return self.fitness / len(self.species.population)
