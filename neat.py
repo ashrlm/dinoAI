@@ -24,6 +24,8 @@
         # NB: Using modified sigmoid ((2/(1+e^-4.9x)) - 1) as activation to allow confidence in range(-1,1)
 
 # TODO: Fix mutate_node_add method - Only one connection added
+# TODO: Remove debug statement
+# TODO: Fix mutate_node_add to create new layers - Only 1 layer ever added
 # TODO: Duplicate connections
 
 #Libraries
@@ -47,8 +49,8 @@ class Network():
         self.outputs = outputs
         self.mutate_weight_uniform = 0.72
         self.mutate_weight_random = 0.08
-        self.add_connection_rate = 0.25
-        self.add_node_rate = 0.03
+        self.add_connection_rate = .25
+        self.add_node_rate = .03
         self.species = self.speciate()
         self.fitness = -1
         self.adjusted_fitness = -1
@@ -132,26 +134,32 @@ class Network():
 
     def mutate_node_add(self):
         if random.random() < self.add_node_rate and self.connections:
-            min_layer = 0
+            min_layer = 1
             max_layer = 0
+            neuron_hidden = False
 
             for neuron in self.neurons:
-                if neuron.layer.index < min_layer:
+                if neuron.layer.index < min_layer and neuron.layer.index:
                     min_layer = neuron.layer.index
-                elif neuron.layer.index > max_layer and neuron.layer.index != float('inf'):
-                    max_layer = neuron.layer.index
+                    neuron_hidden = True
+                elif neuron.layer.index > max_layer:
+                    if neuron.layer.index != float('inf'):
+                        max_layer = neuron.layer.index
+                        neuron_hidden = True
 
-            if (min_layer, max_layer) == (0, 0): #This occurs on initial add, due to the disallowment of the output neurons
+            if not neuron_hidden: #This occurs on initial add, due to the disallowment of the output neurons
                 layer_index = 1
 
             else:
-                layer_index = random.randint(min_layer+1, max_layer-1)
+                layer_index = random.randint(min_layer, max_layer)
 
-            try:
-                layer = Layer.layers[layer_index]
+            for layer_ in Layer.layers:
+                if layer_.index == layer_index:
+                    layer = layer_
+                    break
 
-            except IndexError: #Layer does not exist
-                Layer(
+            else: #Layer does not exist
+                layer = Layer(
                     layer_index,
                     []
                 )
@@ -218,7 +226,7 @@ class Neuron():
 
     def activate(self):
 
-        if self.md == "input":
+        if 'input' in self.md:
             return self.output
         self.output = None
         weighted_input = 0
@@ -458,7 +466,7 @@ def main():
             for connection in network.connections:
                 if connection.neurons[0].layer.index == float('inf') or connection.neurons[0].layer.index >= connection.neurons[1].layer.index or connection.neurons[0].md in ['duck', 'jump']:
                     temp_connections.remove(connection)
-                    print(connection, 'rm')
+                    print(connection.neurons[0].md, connection.neurons[0].layer.index, connection.neurons[1].md, connection.neurons[1].layer.index, 'rm')
                     try:
                         connection.neurons[1].inputs.remove(connection)
                     except:
