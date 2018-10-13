@@ -23,7 +23,8 @@
         # NB: If neither condition has a confidence >= .5, then the player wil continue as usual
         # NB: Using modified sigmoid ((2/(1+e^-4.9x)) - 1) as activation to allow confidence in range(-1,1)
 
-# TODO: Run sigmoid on all input data to prevent inputs being blown up
+# TODO: Fix mutate_node_add method - Only one connection added
+# TODO: Duplicate connections
 
 #Libraries
 import random
@@ -90,11 +91,24 @@ class Network():
             neuron_0 = self.neurons[0]
             neuron_1 = self.neurons[1]
 
+            loop_end = False
+            while neuron_0 in neuron_1.inputs or neuron_0.layer.index >= neuron_1.layer.index or neuron_0.layer.index == float('inf') or not loop_end:
 
-            while neuron_0.layer.index >= neuron_1.layer.index and neuron_0.layer.index != float('inf'):
+                loop_end = True
+                temp = None
 
                 neuron_0 = random.choice(self.neurons)
                 neuron_1 = random.choice(self.neurons)
+
+                for connection in self.connections:
+                    if connection.neurons == (neuron_0, neuron_1):
+                        temp = False
+
+                if temp == False:
+                    loop_end = False
+                else:
+                    loop_end = True
+
 
             conn_weight = random.uniform(-1,1)
 
@@ -210,10 +224,11 @@ class Neuron():
         weighted_input = 0
 
         for connection in self.inputs:
-            try:
-                weighted_input += (connection.weight * connection.neurons[0].output)
-            except TypeError:
-                self.inputs.remove(connection)
+            if connection.activated:
+                try:
+                    weighted_input += (connection.weight * connection.neurons[0].output)
+                except TypeError:
+                    self.inputs.remove(connection)
 
         try:
             self.output = sigmoid(weighted_input)
@@ -421,6 +436,7 @@ def main():
         ))
 
     population = create_population(50, inputs, input_layer, 2, bias)
+    most_connections = 0
 
     while True:
 
@@ -433,6 +449,7 @@ def main():
             for connection in network.connections:
                 if connection.neurons[0].layer.index == float('inf') or connection.neurons[0].layer.index >= connection.neurons[1].layer.index or connection.neurons[0].md in ['duck', 'jump']:
                     temp_connections.remove(connection)
+                    print(connection, 'rm')
                     try:
                         connection.neurons[1].inputs.remove(connection)
                     except:
@@ -443,6 +460,12 @@ def main():
                         pass
 
             network.connections = list(temp_connections)
+
+            if len(network.connections) > most_connections:
+                most_connections = len(network.connections)
+                for connection in network.connections:
+                    print(connection.neurons, connection.neurons[0].md, connection.neurons[0].output, connection.neurons[1].md, connection.neurons[1].output, connection.weight, connection.activated)
+                print('')
 
             pop_scored[network] = network.fitness
 
