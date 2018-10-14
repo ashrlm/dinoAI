@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
 
 import random
+import math
 import pygame
 from pygame.locals import *
 
-# TODO: Bird height - ASAP
-# TODO: Scaling - Fix "Magic numbers"
+# TODO: Fix neuron updates - Stuck
 
 global generation
 generation = -1
+
+def sigmoid(x): #Custom, streched out sigmoid to prevent inputs being blown up
+    sig_1 = round((100 / (1 + (math.e ** (-.001*x)))) - 50, 4)
+    sig_2 = (2 / (1 + (math.e ** (-.1*sig_1)))) - 1
+    return sig_2
 
 def play(networks):
     global generation
@@ -80,13 +85,23 @@ def play(networks):
 
         def jump(self):
             if not self.jumping:
+
+                if self.ducking:
+                    self.ducking = False
+                    self.jumping=True
+                    self.update()
+                    self.jump()
+
                 self.jumping = True
-                self.yvel = 32
+                self.yvel = 25
+                self.image = pygame.image.load('assets/dino.png')
+                self.hitbox = self.image.get_rect()
                 self.hitbox.x = self.xpos
                 self.hitbox.y = self.ypos
 
         def duck(self):
             self.ducking = True
+            self.jumping = False
 
         def update(self):
             self.score += 1
@@ -190,14 +205,17 @@ def play(networks):
 
 
                 for i in range(len(input_data)):
-                    network.inputs[i].output = input_data[i]
+                    network.inputs[i].output = sigmoid(input_data[i])
 
                 output = network.activate()
                 try:
                     if output.md=="jump":
                         curr_player.jump()
-                    else:
+                    elif output.md=="duck":
                         players[network].duck()
+                    else:
+                        print("Never happen - Fix ASAP!!!")
+                        quit()
                 except:
                     pass
 

@@ -21,11 +21,12 @@
         # jump
         # duc
         # NB: If neither condition has a confidence >= .5, then the player wil continue as usual
-        # NB: Using modified sigmoid ((2/(1+e^-x)) - 1) as activation to allow confidence in range(-1,1)
+        # NB: Using modified sigmoid ((2/(1+e^-4.9x)) - 1) as activation to allow confidence in range(-1,1)
 
-# TODO: Fix so enemies only update once, not each time a player is checked
+# TODO: Fix mutate_node_add method - Only one connection added
+# TODO: Duplicate connections
 
-#Prebuilt Libraries
+#Libraries
 import random
 import math
 import sys
@@ -47,8 +48,8 @@ class Network():
         self.outputs = outputs
         self.mutate_weight_uniform = 0.72
         self.mutate_weight_random = 0.08
-        self.add_connection_rate = 0.25
-        self.add_node_rate = 0.03
+        self.add_connection_rate = .25
+        self.add_node_rate = .03
         self.species = self.speciate()
         self.fitness = -1
         self.adjusted_fitness = -1
@@ -56,10 +57,11 @@ class Network():
         self.inputs = []
 
         for neuron in self.neurons:
-            if neuron.md == 'input':
+            if 'input' in neuron.md:
                 self.inputs.append(neuron)
 
     def speciate(self):
+        Species.species = []
         for species in Species.species:
             if compatibility(c1,c2,c3, self, species.representative, threshold):
                 species.population.append(self)
@@ -91,11 +93,24 @@ class Network():
             neuron_0 = self.neurons[0]
             neuron_1 = self.neurons[1]
 
+            loop_end = False
+            while neuron_0 in neuron_1.inputs or neuron_0.layer.index >= neuron_1.layer.index or neuron_0.layer.index == float('inf') or not loop_end or ('bias' in neuron_0.md.lower() and neuron_1.layer.index == float('inf')):
 
-            while neuron_0.layer.index >= neuron_1.layer.index and neuron_0.layer.index != float('inf'):
+                loop_end = True
+                temp = None
 
                 neuron_0 = random.choice(self.neurons)
                 neuron_1 = random.choice(self.neurons)
+
+                for connection in self.connections:
+                    if connection.neurons == (neuron_0, neuron_1):
+                        temp = False
+
+                if temp == False:
+                    loop_end = False
+                else:
+                    loop_end = True
+
 
             conn_weight = random.uniform(-1,1)
 
@@ -119,44 +134,33 @@ class Network():
 
     def mutate_node_add(self):
         if random.random() < self.add_node_rate and self.connections:
-            min_layer = 0
-            max_layer = 0
 
-            for neuron in self.neurons:
-                if neuron.layer.index < min_layer:
-                    min_layer = neuron.layer.index
-                elif neuron.layer.index > max_layer and neuron.layer.index != float('inf'):
-                    max_layer = neuron.layer.index
+            connections = []
 
-            if (min_layer, max_layer) == (0, 0): #This occurs on initial add, due to the disallowment of the output neurons
-                layer_index = 1
+            split_connection = random.choice(self.connections)
 
-            else:
-                layer_index = random.randint(min_layer+1, max_layer-1)
+            lower_bound = split_connection.neurons[0].layer.index + 1 #+1 to make sure it doesn't add it to where the input for this connection is
+            upper_bound = split_connection.neurons[1].layer.index - 1 #-1 to make sure it doesn't add it to where the output for the connection is
 
-            try:
-                layer = Layer.layers[layer_index]
+            if upper_bound == float('inf'): #Output neurons
+                upper_bound = int(sys.float_info.max) #Some unnecesarily large number - Allow ~any int as random.uniform(0,float('inf')) will always return float('inf')
 
-            except IndexError: #Layer does not exist
-                Layer(
+            layer_index = random.randint(lower_bound, upper_bound)
+
+            for layer_ in Layer.layers:
+                if layer_.index == layer_index:
+                    layer = layer_
+                    break
+
+
+            else: #Layer does not exist
+                layer = Layer(
                     layer_index,
                     []
                 )
 
-            connections = []
-
-            for connection in self.connections:
-
-                if connection.neurons[0].layer.index == layer_index-1 and connection.neurons[1].layer.index in (layer_index+1, float('inf')):
-                    connections.append(connection)
-
-            try:
-                split_connection = random.choice(connections)
-            except:
-                return None
-
             new_neuron = Neuron(
-                split_connection.neurons[1].inputs,
+                [],
                 layer
             )
 
@@ -176,12 +180,19 @@ class Network():
                 split_connection.weight
             )
 
+            new_conn_bias = Connection(
+                (bias,
+                new_neuron),
+                random.uniform(-1,1)
+            )
+
             self.connections.append(new_conn_0)
             self.connections.append(new_conn_1)
+            self.connections.append(new_conn_bias)
 
             new_neuron.inputs.append(new_conn_0)
+            new_neuron.inputs.append(new_conn_bias)
             split_connection.neurons[1].inputs.append(new_conn_1)
-
 
         def adjusted_fitness(self):
             return self.fitness / len(self.species.population)
@@ -205,26 +216,27 @@ class Neuron():
 
     def activate(self):
 
-        if self.output:
+        if 'input' in self.md:
             return self.output
-
+        self.output = None
         weighted_input = 0
 
         for connection in self.inputs:
-            try:
-                weighted_input += (connection.weight * connection.neurons[0].output)
-            except TypeError:
-                self.inputs.remove(connection)
-                self.activate()
-                quit()
+            if connection.activated:
+                try:
+                    weighted_input += (connection.weight * connection.neurons[0].output)
+                except TypeError:
+                    self.inputs.remove(connection)
 
         try:
-            self.output = round((2 / (1 + (math.e **(-5*(weighted_input))))) - 1, 4)
+            self.output = sigmoid(weighted_input)
         except OverflowError:
             if weighted_input > 0:
                 self.output = 1
-            else:
+            elif weighted_input < 0:
                 self.output = -1
+            else:
+                self.output = 0
 
 class Connection():
 
@@ -261,6 +273,7 @@ class Species():
 
     def add(self, new_network):
         self.population.append(new_network)
+        self.representative = random.choice(self.population)
 
 class Layer():
 
@@ -270,6 +283,9 @@ class Layer():
         self.index = index
         self.neurons = neurons
         Layer.layers.append(self)
+
+def sigmoid(x):
+    return round((2 / (1 + (math.e ** (-3*x)))) - 1, 4)
 
 def compatibility(c1, c2, c3, network1, network2, threshold):
     neurons_larger = max(len(network1.neurons), len(network2.neurons))
@@ -402,31 +418,65 @@ def main():
     )
 
     #Bias Neuron Generation
+    global bias
     bias = Neuron(
         [],
         input_layer,
         output=1,
-        md="Bias"
+        md="input bias"
     )
 
     #Generation of inputs
     inputs = []
+    mds = [
+        'Distance to next obstacle',
+        'Height of next obstacle',
+        'Width of obstacle',
+        'Bird Height',
+        'speed',
+        'Player YPOS (For determining ducking)',
+        'Obstacle gap',
+    ]
     for i in range(7):
         inputs.append(Neuron(
             [],
             input_layer,
-            md="input"
+            md='input ' + mds[i]
         ))
 
     population = create_population(50, inputs, input_layer, 2, bias)
+    most_connections = 0
 
     while True:
 
         for species in Species.species:
+            print(species.population)
             species.fitness()
 
         pop_scored = {}
         for network in population:
+            temp_connections = list(network.connections)
+            for connection in network.connections:
+                if connection.neurons[0].layer.index == float('inf') or connection.neurons[0].layer.index >= connection.neurons[1].layer.index or connection.neurons[0].md in ['duck', 'jump']:
+                    temp_connections.remove(connection)
+                    print(connection.neurons[0].md, connection.neurons[0].layer.index, connection.neurons[1].md, connection.neurons[1].layer.index, 'rm')
+                    try:
+                        connection.neurons[1].inputs.remove(connection)
+                    except:
+                        pass
+                    try:
+                        connection.neurons[0].inputs.remove(connection)
+                    except:
+                        pass
+
+            network.connections = list(temp_connections)
+
+            if len(network.connections) > most_connections:
+                most_connections = len(network.connections)
+                for connection in network.connections:
+                    print(connection.neurons, connection.neurons[0].md, connection.neurons[0].output, connection.neurons[1].md, connection.neurons[1].output, connection.weight, connection.activated)
+                print('')
+
             pop_scored[network] = network.fitness
 
         ranked = rank(pop_scored)
