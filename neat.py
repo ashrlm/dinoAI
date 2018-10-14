@@ -61,7 +61,6 @@ class Network():
                 self.inputs.append(neuron)
 
     def speciate(self):
-        Species.species = []
         for species in Species.species:
             if compatibility(c1,c2,c3, self, species.representative, threshold):
                 species.population.append(self)
@@ -450,7 +449,6 @@ def main():
     while True:
 
         for species in Species.species:
-            print(species.population)
             species.fitness()
 
         pop_scored = {}
@@ -503,6 +501,10 @@ def main():
         for net in ranked:
             population.append(net)
         population = population[:50]
+        
+        Species.species = []
+        for network in population:
+            network.speciate()
 
 if __name__ == "__main__":
     main()
