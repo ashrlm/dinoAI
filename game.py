@@ -9,16 +9,16 @@ for q in quiets:
         show = False
         break
 
-
+import neat
+import os
 import random
 import math
 import pygame
 from pygame.locals import *
 
-# TODO: Fix neuron updates - Stuck
-
 global generation
 generation = -1
+
 
 params = sys.argv
 if '-q' in sys.argv:
@@ -194,7 +194,7 @@ def play(networks):
                 quit()
 
         if show:
-            screen.fill((255,255,255))
+            screen.fill(neat.bg_color)
 
         for enemy in Entity.enemies:
             enemy.update()

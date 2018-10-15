@@ -23,8 +23,7 @@
         # NB: If neither condition has a confidence >= .5, then the player wil continue as usual
         # NB: Using modified sigmoid ((2/(1+e^-4.9x)) - 1) as activation to allow confidence in range(-1,1)
 
-# TODO: Fix mutate_node_add method - Only one connection added
-# TODO: Duplicate connections
+# TODO: Chance that top 5 not being kept - Differing behaviour after generation - Testing now
 
 #Libraries
 import random
@@ -45,8 +44,9 @@ for d in debugs:
 c1 = 1.0
 c2 = 1.0
 c3 = 0.4
-
 threshold = 3.0
+
+bg_color = (255,255,255)
 
 class Network():
 
@@ -490,7 +490,7 @@ def main():
         population = []
 
         ranked = list(ranked.keys())
-
+        
         for net in ranked[:5]: #Keep the top 5 from curr population
             population.append(net)
             ranked.remove(net) #Remove so not used in XOver
@@ -514,6 +514,11 @@ def main():
         Species.species = []
         for network in population:
             network.speciate()
+        if debug:
+            if (len(population) != 50:
+                print("Population drift to ", len(population))
+            if population == [population[0]] * len(population)):
+                print("Population all same")
 
 if __name__ == "__main__":
     main()
