@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 
+#Setup parameters and allow quiet mode
+import sys
+show = False
+quiets = ['-q', '-quiet', '--q', '--quiet']
+for q in quiets:
+    if q in sys.argv:
+        show = False
+
+
 import random
 import math
 import pygame
@@ -10,6 +19,10 @@ from pygame.locals import *
 global generation
 generation = -1
 
+params = sys.argv
+if '-q' in sys.argv:
+    show = False
+    
 def sigmoid(x): #Custom, streched out sigmoid to prevent inputs being blown up
     sig_1 = round((100 / (1 + (math.e ** (-.001*x)))) - 50, 4)
     sig_2 = (2 / (1 + (math.e ** (-.1*sig_1)))) - 1
@@ -19,8 +32,9 @@ def play(networks):
     global generation
     generation += 1
     size = (1350, 675)
-    screen = pygame.display.set_mode(size)
-    pygame.display.set_caption("Generation " + str(generation))
+    if show:
+        screen = pygame.display.set_mode(size)
+        pygame.display.set_caption("Generation " + str(generation))
     gravity = 2
     speed = 10
 
@@ -180,7 +194,8 @@ def play(networks):
 
         for enemy in Entity.enemies:
             enemy.update()
-            screen.blit(enemy.image, (enemy.xpos, enemy.ypos))
+            if show:
+                screen.blit(enemy.image, (enemy.xpos, enemy.ypos))
 
         for network in networks:
 
@@ -218,8 +233,9 @@ def play(networks):
                         quit()
                 except:
                     pass
-
-            screen.blit(curr_player.image, (curr_player.xpos, curr_player.ypos))
+            
+            if show:
+                screen.blit(curr_player.image, (curr_player.xpos, curr_player.ypos))
 
             for enemy in Entity.enemies:
                 if curr_player.hitbox.colliderect(enemy.hitbox):
@@ -235,8 +251,8 @@ def play(networks):
             if players[network].score % 100 == 0 and players[network].alive:
                 speed += 1
                 break
-
-        pygame.display.flip()
+        if show:
+            pygame.display.flip()
         clock.tick(30)
 
     return scores
