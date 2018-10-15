@@ -2,11 +2,12 @@
 
 #Setup parameters and allow quiet mode
 import sys
-show = False
+show = True
 quiets = ['-q', '-quiet', '--q', '--quiet']
 for q in quiets:
     if q in sys.argv:
         show = False
+        break
 
 
 import random
@@ -35,6 +36,8 @@ def play(networks):
     if show:
         screen = pygame.display.set_mode(size)
         pygame.display.set_caption("Generation " + str(generation))
+    else:
+        pygame.init()
     gravity = 2
     speed = 10
 
@@ -190,7 +193,8 @@ def play(networks):
             if event.type==pygame.QUIT:
                 quit()
 
-        screen.fill((255,255,255))
+        if show:
+            screen.fill((255,255,255))
 
         for enemy in Entity.enemies:
             enemy.update()

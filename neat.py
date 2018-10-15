@@ -34,6 +34,14 @@ import sys
 #Helper Script
 import game
 
+#Debug mode
+debug = False
+debugs = ['-d', '-debug', '--d', '--debug']
+for d in debugs:
+    if d in sys.argv:
+        debug = True
+        break
+
 c1 = 1.0
 c2 = 1.0
 c3 = 0.4
@@ -457,7 +465,8 @@ def main():
             for connection in network.connections:
                 if connection.neurons[0].layer.index == float('inf') or connection.neurons[0].layer.index >= connection.neurons[1].layer.index or connection.neurons[0].md in ['duck', 'jump']:
                     temp_connections.remove(connection)
-                    print(connection.neurons[0].md, connection.neurons[0].layer.index, connection.neurons[1].md, connection.neurons[1].layer.index, 'rm')
+                    if debug:
+                        print(connection.neurons[0].md, connection.neurons[0].layer.index, connection.neurons[1].md, connection.neurons[1].layer.index, 'rm')
                     try:
                         connection.neurons[1].inputs.remove(connection)
                     except:
@@ -468,12 +477,12 @@ def main():
                         pass
 
             network.connections = list(temp_connections)
-
-            if len(network.connections) > most_connections:
-                most_connections = len(network.connections)
-                for connection in network.connections:
-                    print(connection.neurons, connection.neurons[0].md, connection.neurons[0].output, connection.neurons[1].md, connection.neurons[1].output, connection.weight, connection.activated)
-                print('')
+            if debug:
+                if len(network.connections) > most_connections:
+                    most_connections = len(network.connections)
+                    for connection in network.connections:
+                        print(connection.neurons, connection.neurons[0].md, connection.neurons[0].output, connection.neurons[1].md, connection.neurons[1].output, connection.weight, connection.activated)
+                    print('')
 
             pop_scored[network] = network.fitness
 
