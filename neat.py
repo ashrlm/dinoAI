@@ -61,6 +61,7 @@ class Network():
                 self.inputs.append(neuron)
 
     def speciate(self):
+        Species.species = []
         for species in Species.species:
             if compatibility(c1,c2,c3, self, species.representative, threshold):
                 species.population.append(self)
@@ -272,6 +273,7 @@ class Species():
 
     def add(self, new_network):
         self.population.append(new_network)
+        self.representative = random.choice(self.population)
 
 class Layer():
 
@@ -448,6 +450,7 @@ def main():
     while True:
 
         for species in Species.species:
+            print(species.population)
             species.fitness()
 
         pop_scored = {}
