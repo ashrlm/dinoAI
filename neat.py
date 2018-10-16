@@ -515,9 +515,9 @@ def main():
         for network in population:
             network.speciate()
         if debug:
-            if (len(population) != 50:
+            if len(population) != 50:
                 print("Population drift to ", len(population))
-            if population == [population[0]] * len(population)):
+            if population == [population[0]] * len(population):
                 print("Population all same")
 
 if __name__ == "__main__":
